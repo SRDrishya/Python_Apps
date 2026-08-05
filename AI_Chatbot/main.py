@@ -14,7 +14,7 @@ if __name__ == "__main__":
             break
 
         response = chatbot.chat(user_input)
-        print("Bot:", response)
+        print("Assistant:", response)
 
 
 
