@@ -2,7 +2,7 @@
 
 A Python command-line weather application that fetches current weather details for a city using the OpenWeather API.
 
-## Features
+## FeaturesS
 - Accepts a city name from the user.
 - Retrieves weather information from the OpenWeather API.
 - Displays temperature, humidity, pressure, weather description, wind speed, and visibility.

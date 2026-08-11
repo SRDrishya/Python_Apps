@@ -6,6 +6,7 @@ operator = input("Enter the operator (+, -, *, /, //, %, **): ")
 result = None
 if operator == '+':
     result = add(number1, number2)
+    
      
 elif operator == '-':
     result = subtract(number1, number2)     

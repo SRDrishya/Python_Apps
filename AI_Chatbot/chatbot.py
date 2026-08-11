@@ -34,26 +34,39 @@ class ChatBot:
     def clear_history(self):
         self.history = []
 
-    def chat(self, message):
-        """Send a prompt to the OpenAI API and return the text response."""
+    def chat(self, message, stream=False):
+        """Send prompt and either stream chunks or return full response.
+
+        - If `stream=True` returns the generator from `stream_response()`.
+        - Otherwise collects the generator's chunks and returns the final string.
+        """
+        if stream:
+            return self.stream_response(message)
+
+        # Non-stream: collect chunks produced by the canonical streamer
+        chunks = []
+        for chunk in self.stream_response(message):
+            chunks.append(chunk)
+
+        return "".join(chunks).strip()
+
+    def stream_response(self, message):
         self.add_user_message(message)
         request_input = self.build_conversation()
 
-        response = self.client.responses.create(
-            model=self.model,
-            input=request_input,
-            temperature=self.temperature,
+        stream = self.client.responses.create(
+        model=self.model,
+        input=request_input,
+        temperature=self.temperature,
+        stream=True,
         )
 
-        output_text = ""
-        if hasattr(response, "output_text") and response.output_text:
-            output_text = response.output_text.strip()
-        else:
-            for item in getattr(response, "output", []):
-                for content in item.get("content", []):
-                    if content.get("type") == "output_text":
-                        output_text += content.get("text", "")
-            output_text = output_text.strip()
+        full_text = ""
 
-        self.add_assistant_message(output_text)
-        return output_text
+        for event in stream:
+            if event.type == "response.output_text.delta":
+                full_text += event.delta
+                yield event.delta
+
+        self.add_assistant_message(full_text.strip())
+

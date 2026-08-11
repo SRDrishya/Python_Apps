@@ -1,4 +1,5 @@
 from chatbot import ChatBot
+import time
 
 chatbot = ChatBot()
 
@@ -13,8 +14,11 @@ if __name__ == "__main__":
             print("Goodbye!")
             break
 
-        response = chatbot.chat(user_input)
-        print("Assistant:", response)
+        print("Assistant:", end=" ", flush=True)
+        for chunk in chatbot.chat(user_input, stream=True):
+            print(chunk, end="", flush=True)
+            time.sleep(0.05)  # Simulate streaming delay
+        print()
 
 
 
