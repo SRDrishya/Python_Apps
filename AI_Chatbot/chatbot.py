@@ -8,14 +8,14 @@ import tiktoken
 
 class ChatBot:
     def __init__(self, model="gpt-4.1-mini", temperature=0.7, system_prompt="You are a helpful AI assistant.",context_budget=4000,
-    reserved_output_tokens=500):
+    max_output_tokens=500):
         self.client = OpenAI(api_key=API_KEY)
         self.model = model
         self.encoding = tiktoken.encoding_for_model(model)
         self.temperature = temperature
         self.system_prompt = system_prompt
         self.context_budget = context_budget
-        self.reserved_output_tokens = reserved_output_tokens
+        self.max_output_tokens = max_output_tokens
         self.history = []
         self.chathistory = Path("chathistory.json")
         self.load_history()
@@ -56,7 +56,7 @@ class ChatBot:
             self.context_budget
             - system_tokens
             - current_message_tokens
-            - self.reserved_output_tokens
+            - self.max_output_tokens
         )
     
         recent_history, history_tokens = self.get_recent_history(
@@ -71,7 +71,7 @@ class ChatBot:
         print("Context budget:", self.context_budget)
         print("System tokens:", system_tokens)
         print("Current message tokens:", current_message_tokens)
-        print("Reserved output tokens:", self.reserved_output_tokens)
+        print("Max output tokens:", self.max_output_tokens)
         print("History budget:", history_budget)
         print("Selected history tokens:", history_tokens)
     
@@ -103,6 +103,7 @@ class ChatBot:
         model=self.model,
         input=request_input,
         temperature=self.temperature,
+        max_output_tokens=self.max_output_tokens,
         stream=True,
         )
 
