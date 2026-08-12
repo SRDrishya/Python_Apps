@@ -1,5 +1,7 @@
 from openai import OpenAI
 from config import API_KEY
+import json
+from pathlib import Path
 
 class ChatBot:
     def __init__(self, model="gpt-4.1-mini", temperature=0.7, system_prompt="You are a helpful AI assistant."):
@@ -8,6 +10,8 @@ class ChatBot:
         self.temperature = temperature
         self.system_prompt = system_prompt
         self.history = []
+        self.chathistory = Path("chathistory.json")
+        self.load_history()
 
     def add_user_message(self, message):
         self.history.append({
@@ -53,7 +57,8 @@ class ChatBot:
     def stream_response(self, message):
         self.add_user_message(message)
         request_input = self.build_conversation()
-
+        print("DEBUG HISTORY:")
+        print(self.history)
         stream = self.client.responses.create(
         model=self.model,
         input=request_input,
@@ -69,4 +74,21 @@ class ChatBot:
                 yield event.delta
 
         self.add_assistant_message(full_text.strip())
+        self.save_history()
+
+
+    def load_history(self):
+        """Load a list of messages into the chatbot's history."""
+        
+        if not self.chathistory.exists():
+            self.history = []
+            return
+        with open(self.chathistory, "r") as f:
+            self.history = json.load(f)
+
+    def save_history(self):
+        """Return the current conversation history."""
+        with open(self.chathistory, "w") as f:
+            json.dump(self.history, f)
+    
 
