@@ -1,4 +1,4 @@
-from email.mime import text
+from email.mime import message, text
 
 from openai import OpenAI
 from config import API_KEY
@@ -18,6 +18,7 @@ class ChatBot:
         self.max_output_tokens = max_output_tokens
         self.history = []
         self.chathistory = Path("chathistory.json")
+        self.memory_file = Path("memory.json")
         self.load_history()
 
     def add_user_message(self, message):
@@ -98,7 +99,25 @@ class ChatBot:
 
     def stream_response(self, message):
         self.add_user_message(message)
+
+         # Retrieve relevant long-term memories
+        memories = self.retrieve_memories(message, top_k=3)
+
         request_input = self.build_conversation()
+
+        if memories:
+            memory_text = "Relevant memories:\n"
+
+            for memory in memories:
+                memory_text += f"- {memory['content']}\n"
+            request_input.insert(
+                1, 
+                {
+                "role": "system",
+                "content": memory_text
+                }
+            )
+            
         stream = self.client.responses.create(
         model=self.model,
         input=request_input,
@@ -150,3 +169,90 @@ class ChatBot:
             token_count += message_tokens
 
         return selected_history, token_count
+
+    def save_memory(self, message):
+        """Save a message to the chatbot's memory."""
+        response = self.client.embeddings.create(
+        model="text-embedding-3-small",
+        input=message,
+         )
+
+        embedding = response.data[0].embedding
+
+        memory = {
+            "message":message,
+            "embedding": embedding
+        }
+        memories = []
+        if not self.memory_file.exists():
+            memories = []
+        else:
+            with open(self.memory_file, "r") as f:
+                memories = json.load(f)
+
+        memories.append(memory)
+
+        with open(self.memory_file, "w") as f:
+            json.dump(memories, f)
+
+    def cosine_similarity(self, vector_a, vector_b):
+        dot_product = sum(
+            a * b
+            for a, b in zip(vector_a, vector_b)
+        )
+
+        magnitude_a = sum(
+            a * a for a in vector_a
+        ) ** 0.5
+
+        magnitude_b = sum(
+            b * b for b in vector_b
+        ) ** 0.5
+
+        if magnitude_a == 0 or magnitude_b == 0:
+            return 0.0
+
+        return dot_product / (magnitude_a * magnitude_b)
+    
+    def retrieve_memories(self, query, top_k=3):
+        """Return the most relevant stored memories for a query."""
+
+        # 1. Create an embedding for the current query
+        response = self.client.embeddings.create(
+            model="text-embedding-3-small",
+            input=query,
+        )
+
+        query_vector = response.data[0].embedding
+
+        # 2. Load stored memories
+        if not self.memory_file.exists():
+            return []
+
+        with open(self.memory_file, "r") as f:
+            memories = json.load(f)
+
+        # 3. Calculate similarity for every memory
+        results = []
+
+        for memory in memories:
+            score = self.cosine_similarity(
+                query_vector,
+                memory["embedding"],
+            )
+
+            results.append({
+                "content": memory["message"],
+                "score": score,
+            })
+
+        # 4. Highest similarity first
+        results.sort(
+            key=lambda x: x["score"],
+            reverse=True,
+        )
+
+        # 5. Return only the top results
+        return results[:top_k]
+    
+    

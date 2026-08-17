@@ -20,6 +20,17 @@ if __name__ == "__main__":
             time.sleep(0.05)  # Simulate streaming delay
         print()
 
+chatbot.save_memory("My name is Drishya.")
+chatbot.save_memory("I am learning Python for AI.")
 
+results = chatbot.retrieve_memories(
+    "What is my name?"
+)
 
+print("\nRetrieved memories:")
 
+for memory in results:
+    print(
+        f"{memory['score']:.4f} -> "
+        f"{memory['content']}"
+    )
