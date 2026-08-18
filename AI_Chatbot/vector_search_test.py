@@ -2,7 +2,8 @@ from openai import OpenAI
 from config import API_KEY
 import math
 import re
-
+import numpy as np
+import faiss
 
 client = OpenAI(api_key=API_KEY)
 
@@ -100,34 +101,27 @@ chunks = chunk_sentences(
     overlap=1,
 )
 
-
-print("Chunks:")
-
-for i, chunk in enumerate(chunks):
-
-    print(f"\nChunk {i}:")
-    print(chunk)
-
-    print(
-        "Word count:",
-        len(chunk.split())
-    )
-
-
-# -----------------------------
-# 2. Create embeddings
-# -----------------------------
-
 response = client.embeddings.create(
     model="text-embedding-3-small",
     input=chunks,
 )
-
-
 chunk_vectors = [
     item.embedding
     for item in response.data
 ]
+print("Chunks:")
+embedding_matrix = np.array(
+    chunk_vectors,
+    dtype="float32"
+)
+
+dimension = embedding_matrix.shape[1]
+
+index = faiss.IndexFlatL2(dimension)
+index.add(embedding_matrix)
+
+
+
 
 
 # -----------------------------
@@ -143,77 +137,23 @@ query_response = client.embeddings.create(
 
 query_vector = query_response.data[0].embedding
 
-
-# -----------------------------
-# 4. Compare query with chunks
-# -----------------------------
-
-results = []
-
-for chunk, vector in zip(
-    chunks,
-    chunk_vectors,
-):
-
-    score = cosine_similarity(
-        query_vector,
-        vector,
-    )
-
-    results.append({
-        "chunk": chunk,
-        "score": score,
-    })
-
-
-# -----------------------------
-# 5. Sort results
-# -----------------------------
-
-results.sort(
-    key=lambda x: x["score"],
-    reverse=True,
+query_vector_np = np.array(
+    [query_vector],
+    dtype="float32"
 )
-
 top_k = 2
 
-top_results = results[:top_k]
+distances, indices = index.search(
+    query_vector_np,
+    top_k
+)
 
-# -----------------------------
-# 6. Display results
-# -----------------------------
+print("\nRetrieved chunks:")
 
-print("\nQuery:")
-print(query)
-
-print("\nResults:")
-
-for result in top_results:
+for i in indices[0]:
 
     print(
-        f"{result['score']:.4f} -> "
-        f"{result['chunk']}"
+        f"\nChunk {i}:"
     )
 
-context = "\n\n".join(
-    result["chunk"]
-    for result in top_results
-)
-
-response = client.responses.create(
-    model="gpt-4.1-mini",
-    input=f"""
-Answer the user's question using only the provided context.
-
-Context:
-{context}
-
-Question:
-{query}
-"""
-)
-
-answer = response.output_text
-
-print("\nAnswer:")
-print(answer)
+    print(chunks[i])
