@@ -33,7 +33,7 @@ class ChatBot:
             "content": message,
         })
 
-    def build_conversation(self):
+    def build_conversation(self, memories=None):
         conversation = []
     
         system_tokens = 0
@@ -45,7 +45,17 @@ class ChatBot:
             })
     
             system_tokens = self.count_tokens(self.system_prompt)
-    
+        if memories is None:
+            memories = []
+        memory_text = ""
+        memory_tokens = 0
+        if memories:
+            memory_text = "Relevant long-term memories:\n"
+
+            for memory in memories:
+                memory_text += f"- {memory['content']}\n"
+
+            memory_tokens = self.count_memory_tokens(memories)
         previous_history = self.history[:-1]
         current_message = self.history[-1]
     
@@ -56,6 +66,7 @@ class ChatBot:
         history_budget = (
             self.context_budget
             - system_tokens
+            - memory_tokens
             - current_message_tokens
             - self.max_output_tokens
         )
@@ -64,9 +75,14 @@ class ChatBot:
             previous_history,
             history_budget
         )
-    
-        conversation.extend(recent_history)
-    
+
+        # Add memory context before the current message
+        if memory_text:
+            conversation.append({
+                "role": "system",
+                "content": memory_text,
+            })
+
         conversation.append(current_message)
     
         print("Context budget:", self.context_budget)
@@ -103,21 +119,8 @@ class ChatBot:
          # Retrieve relevant long-term memories
         memories = self.retrieve_memories(message, top_k=3)
 
-        request_input = self.build_conversation()
+        request_input = self.build_conversation(memories=memories)
 
-        if memories:
-            memory_text = "Relevant memories:\n"
-
-            for memory in memories:
-                memory_text += f"- {memory['content']}\n"
-            request_input.insert(
-                1, 
-                {
-                "role": "system",
-                "content": memory_text
-                }
-            )
-            
         stream = self.client.responses.create(
         model=self.model,
         input=request_input,
@@ -134,6 +137,12 @@ class ChatBot:
                 yield event.delta
 
         self.add_assistant_message(full_text.strip())
+
+        memory = self.extract_memory(message)
+
+        if memory:
+            self.save_memory(memory)
+
         self.save_history()
 
 
@@ -171,24 +180,31 @@ class ChatBot:
         return selected_history, token_count
 
     def save_memory(self, message):
-        """Save a message to the chatbot's memory."""
+        """Save a message as long-term memory if it doesn't already exist."""
+
+        memories = []
+
+        if self.memory_file.exists():
+            with open(self.memory_file, "r") as f:
+                memories = json.load(f)
+
+        # Prevent exact duplicates
+        for memory in memories:
+            if memory["message"].strip().lower() == message.strip().lower():
+                return
+
+        # Create embedding
         response = self.client.embeddings.create(
-        model="text-embedding-3-small",
-        input=message,
-         )
+            model="text-embedding-3-small",
+            input=message,
+        )
 
         embedding = response.data[0].embedding
 
         memory = {
-            "message":message,
-            "embedding": embedding
+            "message": message,
+            "embedding": embedding,
         }
-        memories = []
-        if not self.memory_file.exists():
-            memories = []
-        else:
-            with open(self.memory_file, "r") as f:
-                memories = json.load(f)
 
         memories.append(memory)
 
@@ -255,4 +271,76 @@ class ChatBot:
         # 5. Return only the top results
         return results[:top_k]
     
-    
+    def count_memory_tokens(self, memories):
+        total = 0
+
+        for memory in memories:
+            total += self.count_tokens(memory["content"])
+
+        return total
+
+    def should_save_memory(self, message):
+        """Determine whether a user message looks like useful long-term memory."""
+
+        keywords = [
+            "my name is",
+            "i am",
+            "i live in",
+            "i work as",
+            "i work at",
+            "i like",
+            "i love",
+            "i prefer",
+            "i want to",
+            "my goal is",
+            "my age is"
+        ]
+
+        message_lower = message.lower()
+
+        for keyword in keywords:
+            if keyword in message_lower:
+                return True
+
+        return False
+
+    def extract_memory(self, message):
+        """Ask the model whether the user's message contains a useful long-term memory."""
+
+        response = self.client.responses.create(
+            model=self.model,
+            input=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a memory extraction system for an AI chatbot. "
+                        "Identify durable information about the user that may be "
+                        "useful in future conversations.\n\n"
+                        "Return ONLY the memory itself if there is one. "
+                        "If there is no useful long-term memory, return: NONE\n\n"
+                        "Examples:\n"
+                        "User: My name is Drishya.\n"
+                        "Output: My name is Drishya.\n\n"
+                        "User: I am 37 years old.\n"
+                        "Output: Drishya is 37 years old.\n\n"
+                        "User: I want to become an AI engineer.\n"
+                        "Output: Drishya wants to become an AI engineer.\n\n"
+                        "User: What is Python?\n"
+                        "Output: NONE"
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": message,
+                },
+            ],
+            temperature=0,
+            max_output_tokens=100,
+        )
+
+        memory = response.output_text.strip()
+
+        if memory.upper() == "NONE":
+            return None
+
+        return memory
