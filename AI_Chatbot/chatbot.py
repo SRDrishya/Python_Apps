@@ -5,6 +5,7 @@ from config import API_KEY
 import json
 from pathlib import Path
 import tiktoken
+from rag import RAG
 
 class ChatBot:
     def __init__(self, model="gpt-4.1-mini", temperature=0.7, system_prompt="You are a helpful AI assistant.",context_budget=4000,
@@ -20,6 +21,7 @@ class ChatBot:
         self.chathistory = Path("chathistory.json")
         self.memory_file = Path("memory.json")
         self.load_history()
+        self.rag = RAG()
 
     def add_user_message(self, message):
         self.history.append({
@@ -33,7 +35,7 @@ class ChatBot:
             "content": message,
         })
 
-    def build_conversation(self, memories=None):
+    def build_conversation(self, memories=None, documents=None):
         conversation = []
     
         system_tokens = 0
@@ -49,6 +51,8 @@ class ChatBot:
             memories = []
         memory_text = ""
         memory_tokens = 0
+        documents_text = ""
+        documents_tokens = 0
         if memories:
             memory_text = "Relevant long-term memories:\n"
 
@@ -62,11 +66,30 @@ class ChatBot:
         current_message_tokens = self.count_tokens(
             current_message["content"]
         )
-    
-        history_budget = (
+
+        if documents:
+
+            document_text = (
+                "Relevant document context:\n"
+            )
+
+            for document in documents:
+            
+                document_text += (
+                    f"- {document['chunk']}\n"
+                )
+
+            document_tokens = sum(
+                self.count_tokens(
+                    document["chunk"]
+                )
+                for document in documents
+            )
+            history_budget = (
             self.context_budget
             - system_tokens
             - memory_tokens
+            - document_tokens
             - current_message_tokens
             - self.max_output_tokens
         )
@@ -82,7 +105,11 @@ class ChatBot:
                 "role": "system",
                 "content": memory_text,
             })
-
+        if document_text:
+            conversation.append({
+                "role": "system",
+                "content": document_text,
+            })
         conversation.append(current_message)
     
         print("Context budget:", self.context_budget)
@@ -118,8 +145,10 @@ class ChatBot:
 
          # Retrieve relevant long-term memories
         memories = self.retrieve_memories(message, top_k=3)
-
-        request_input = self.build_conversation(memories=memories)
+        documents = self.rag.retrieve(
+    message
+)
+        request_input = self.build_conversation(memories=memories, documents=documents)
 
         stream = self.client.responses.create(
         model=self.model,

@@ -115,9 +115,9 @@ embedding_matrix = np.array(
     dtype="float32"
 )
 
+faiss.normalize_L2(embedding_matrix)
 dimension = embedding_matrix.shape[1]
-
-index = faiss.IndexFlatL2(dimension)
+index = faiss.IndexFlatIP(dimension)
 index.add(embedding_matrix)
 
 
@@ -141,6 +141,7 @@ query_vector_np = np.array(
     [query_vector],
     dtype="float32"
 )
+faiss.normalize_L2(query_vector_np)
 top_k = 2
 
 distances, indices = index.search(
@@ -150,10 +151,17 @@ distances, indices = index.search(
 
 print("\nRetrieved chunks:")
 
-for i in indices[0]:
+for score, i in zip(
+    distances[0],
+    indices[0]
+):
 
     print(
-        f"\nChunk {i}:"
+        f"\nScore: {score:.4f}"
+    )
+
+    print(
+        f"Chunk {i}:"
     )
 
     print(chunks[i])
