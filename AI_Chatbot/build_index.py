@@ -8,9 +8,6 @@ import os
 import re
 
 
-client = OpenAI(api_key=API_KEY)
-
-
 # -----------------------------------
 # Configuration
 # -----------------------------------
@@ -21,6 +18,7 @@ CHUNK_SIZE = 30
 CHUNK_OVERLAP = 1
 
 VECTOR_STORE_DIR = "vector_store"
+DOCUMENT_FILE = "document.txt"
 
 INDEX_FILE = os.path.join(
     VECTOR_STORE_DIR,
@@ -100,143 +98,53 @@ def chunk_sentences(
     return chunks
 
 
-# -----------------------------------
-# Document
-# -----------------------------------
+def build_index(document_file=DOCUMENT_FILE):
+    client = OpenAI(api_key=API_KEY)
 
-document = """
-The project named Aurora was created by Dr. Maya Chen in 2024.
-Aurora was designed to help researchers analyze climate data.
-The project uses Python for its data processing pipeline.
-The initial version was developed at the Northstar Research Lab.
-Aurora is currently used by several research teams for climate analysis.
-"""
+    # Read the knowledge source from a plain-text file so it can be replaced
+    # without changing application code.
+    with open(document_file, "r", encoding="utf-8") as document_handle:
+        document = document_handle.read()
 
+    # Chunking keeps retrieved context small enough for the model while
+    # retaining nearby sentences that explain the same fact.
+    chunks = chunk_sentences(document, CHUNK_SIZE, CHUNK_OVERLAP)
+    if not chunks:
+        raise ValueError("The document does not contain any text to index.")
 
-# -----------------------------------
-# Create chunks
-# -----------------------------------
+    print("Chunks:")
+    for chunk_number, chunk in enumerate(chunks):
+        print(f"\nChunk {chunk_number}:\n{chunk}")
 
-chunks = chunk_sentences(
-    document,
-    chunk_size=CHUNK_SIZE,
-    overlap=CHUNK_OVERLAP
-)
-
-
-print("Chunks:")
-
-for i, chunk in enumerate(chunks):
-
-    print(f"\nChunk {i}:")
-    print(chunk)
-
-
-# -----------------------------------
-# Create embeddings
-# -----------------------------------
-
-response = client.embeddings.create(
-    model=EMBEDDING_MODEL,
-    input=chunks
-)
-
-
-chunk_vectors = [
-    item.embedding
-    for item in response.data
-]
-
-
-# -----------------------------------
-# Convert to NumPy
-# -----------------------------------
-
-embedding_matrix = np.array(
-    chunk_vectors,
-    dtype="float32"
-)
-
-
-# -----------------------------------
-# Normalize vectors
-# -----------------------------------
-
-faiss.normalize_L2(
-    embedding_matrix
-)
-
-
-# -----------------------------------
-# Create FAISS index
-# -----------------------------------
-
-dimension = embedding_matrix.shape[1]
-
-index = faiss.IndexFlatIP(
-    dimension
-)
-
-
-# -----------------------------------
-# Add vectors
-# -----------------------------------
-
-index.add(
-    embedding_matrix
-)
-
-
-print(
-    "\nVectors stored:",
-    index.ntotal
-)
-
-
-# -----------------------------------
-# Create directory
-# -----------------------------------
-
-os.makedirs(
-    VECTOR_STORE_DIR,
-    exist_ok=True
-)
-
-
-# -----------------------------------
-# Save FAISS index
-# -----------------------------------
-
-faiss.write_index(
-    index,
-    INDEX_FILE
-)
-
-
-# -----------------------------------
-# Save chunks
-# -----------------------------------
-
-with open(
-    CHUNKS_FILE,
-    "w",
-    encoding="utf-8"
-) as f:
-
-    json.dump(
-        chunks,
-        f,
-        ensure_ascii=False,
-        indent=2
+    # Embeddings turn each chunk into a vector whose distance represents
+    # semantic similarity, allowing retrieval by meaning instead of keywords.
+    response = client.embeddings.create(
+        model=EMBEDDING_MODEL,
+        input=chunks
+    )
+    embedding_matrix = np.array(
+        [item.embedding for item in response.data],
+        dtype="float32"
     )
 
+    # Unit-length vectors make inner-product search equivalent to cosine
+    # similarity, which is a useful measure for text embeddings.
+    faiss.normalize_L2(embedding_matrix)
 
-print(
-    "\nIndex saved to:",
-    INDEX_FILE
-)
+    # FAISS provides a fast in-memory vector index for nearest-neighbor
+    # retrieval at question-answering time.
+    index = faiss.IndexFlatIP(embedding_matrix.shape[1])
+    index.add(embedding_matrix)
 
-print(
-    "Chunks saved to:",
-    CHUNKS_FILE
-)
+    os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
+    faiss.write_index(index, INDEX_FILE)
+    with open(CHUNKS_FILE, "w", encoding="utf-8") as chunks_handle:
+        json.dump(chunks, chunks_handle, ensure_ascii=False, indent=2)
+
+    print("\nVectors stored:", index.ntotal)
+    print("Index saved to:", INDEX_FILE)
+    print("Chunks saved to:", CHUNKS_FILE)
+
+
+if __name__ == "__main__":
+    build_index()

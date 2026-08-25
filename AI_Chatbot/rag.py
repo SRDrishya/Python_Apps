@@ -15,6 +15,7 @@ class RAG:
         embedding_model="text-embedding-3-small",
         chat_model="gpt-4.1-mini",
         top_k=2,
+        min_score=0.40
     ):
 
         self.client = OpenAI(
@@ -24,6 +25,7 @@ class RAG:
         self.embedding_model = embedding_model
         self.chat_model = chat_model
         self.top_k = top_k
+        self.min_score = min_score
 
         # Load FAISS index
         self.index = faiss.read_index(
@@ -42,7 +44,8 @@ class RAG:
 
     def retrieve(self, question):
 
-        # Create query embedding
+        # Retrieval: embed the question so FAISS can find semantically similar
+        # document chunks rather than relying on exact word matches.
         response = self.client.embeddings.create(
             model=self.embedding_model,
             input=question
@@ -61,7 +64,7 @@ class RAG:
             query_vector
         )
 
-        # Search
+        # Search the vector index for the most relevant chunks.
         scores, indices = self.index.search(
             query_vector,
             self.top_k
@@ -74,9 +77,17 @@ class RAG:
             indices[0]
         ):
 
+            if index_number < 0:
+                continue
+            score = float(score)
+
+            # Reject weak / irrelevant matches
+            if score < self.min_score:
+                continue
             results.append({
                 "score": float(score),
-                "chunk": self.chunks[index_number]
+                "text": self.chunks[index_number]["text"],
+                "metadata": self.chunks[index_number]["metadata"]
             })
 
         return results
@@ -84,14 +95,16 @@ class RAG:
 
     def ask(self, question):
 
-        # Retrieve relevant chunks
+        # Retrieval: find the document passages that are most relevant to the
+        # user's question.
         results = self.retrieve(
             question
         )
 
-        # Create context
+        # Augmentation: combine retrieved passages into the context supplied
+        # to the language model, grounding its answer in the document.
         context = "\n\n".join(
-            result["chunk"]
+            result["text"]
             for result in results
         )
 
@@ -116,7 +129,8 @@ Question:
 {question}
 """
 
-        # Generate answer
+        # Generation: ask the language model to answer using only that context
+        # so unsupported facts are less likely to be introduced.
         response = self.client.responses.create(
             model=self.chat_model,
             input=prompt
@@ -126,3 +140,21 @@ Question:
             "answer": response.output_text,
             "sources": results
         }
+
+
+def ask(question):
+    """Answer a question and expose retrieved chunks for the example script."""
+    result = RAG().ask(question)
+    return {
+        "answer": result["answer"],
+        # Keep the old example-script field name while RAG internally uses
+        # ``text`` for every retrieved document passage.
+        "chunks": [
+            {
+                "score": source["score"],
+                "chunk": source["text"],
+                "metadata": source["metadata"],
+            }
+            for source in result["sources"]
+        ]
+    }

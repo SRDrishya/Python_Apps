@@ -1,5 +1,3 @@
-from email.mime import message, text
-
 from openai import OpenAI
 from config import API_KEY
 import json
@@ -8,7 +6,7 @@ import tiktoken
 from rag import RAG
 
 class ChatBot:
-    def __init__(self, model="gpt-4.1-mini", temperature=0.7, system_prompt="You are a helpful AI assistant.",context_budget=4000,
+    def __init__(self, model="gpt-4.1-mini", temperature=0.7, system_prompt=None,context_budget=4000,
     max_output_tokens=500):
         self.client = OpenAI(api_key=API_KEY)
         self.model = model
@@ -20,9 +18,37 @@ class ChatBot:
         self.history = []
         self.chathistory = Path("chathistory.json")
         self.memory_file = Path("memory.json")
+        self.last_sources = []
         self.load_history()
         self.rag = RAG()
+        self.system_prompt = system_prompt or """
+You are a document-grounded AI assistant.
 
+Answer questions using ONLY information contained in the
+provided document context.
+
+Rules:
+
+1. Do not use your general or pretrained knowledge to answer
+   factual questions.
+
+2. Do not guess or invent information.
+
+3. If the provided documents do not contain the answer, say:
+   "I don't have that information in the provided documents."
+
+4. Retrieved documents may be irrelevant. Do not assume that
+   retrieved context is relevant simply because it was retrieved.
+
+5. Only answer a question when the provided document context
+   actually supports the answer.
+
+6. Do not use information from long-term memory as evidence for
+   document-based questions.
+
+7. If no relevant document context is provided, do not answer
+   from general knowledge.
+"""
     def add_user_message(self, message):
         self.history.append({
             "role": "user",
@@ -37,9 +63,8 @@ class ChatBot:
 
     def build_conversation(self, memories=None, documents=None):
         conversation = []
-    
         system_tokens = 0
-    
+
         if self.system_prompt:
             conversation.append({
                 "role": "system",
@@ -47,12 +72,13 @@ class ChatBot:
             })
     
             system_tokens = self.count_tokens(self.system_prompt)
-        if memories is None:
-            memories = []
+        memories = memories or []
+        documents = documents or []
         memory_text = ""
         memory_tokens = 0
-        documents_text = ""
+        document_text = ""
         documents_tokens = 0
+
         if memories:
             memory_text = "Relevant long-term memories:\n"
 
@@ -62,44 +88,43 @@ class ChatBot:
             memory_tokens = self.count_memory_tokens(memories)
         previous_history = self.history[:-1]
         current_message = self.history[-1]
-    
+
         current_message_tokens = self.count_tokens(
             current_message["content"]
         )
 
         if documents:
-
-            document_text = (
-                "Relevant document context:\n"
-            )
+            document_text = "Relevant document context:\n"
 
             for document in documents:
-            
                 document_text += (
-                    f"- {document['chunk']}\n"
+                    f"- {document['text']}\n"
                 )
 
-            document_tokens = sum(
+            documents_tokens = sum(
                 self.count_tokens(
-                    document["chunk"]
+                    document["text"]
                 )
                 for document in documents
             )
-            history_budget = (
+        # Reserve space for the current question and answer before selecting
+        # older messages, so retrieved document context is not pushed out.
+        history_budget = (
             self.context_budget
             - system_tokens
             - memory_tokens
-            - document_tokens
+            - documents_tokens
             - current_message_tokens
             - self.max_output_tokens
         )
-    
+
         recent_history, history_tokens = self.get_recent_history(
             previous_history,
-            history_budget
+            max(0, history_budget)
         )
 
-        # Add memory context before the current message
+        # Augment the model input with retrieved memory and document context;
+        # this grounds generation in evidence selected for the current query.
         if memory_text:
             conversation.append({
                 "role": "system",
@@ -110,15 +135,10 @@ class ChatBot:
                 "role": "system",
                 "content": document_text,
             })
+
+        conversation.extend(recent_history)
         conversation.append(current_message)
-    
-        print("Context budget:", self.context_budget)
-        print("System tokens:", system_tokens)
-        print("Current message tokens:", current_message_tokens)
-        print("Max output tokens:", self.max_output_tokens)
-        print("History budget:", history_budget)
-        print("Selected history tokens:", history_tokens)
-    
+
         return conversation
 
     def clear_history(self):
@@ -143,19 +163,27 @@ class ChatBot:
     def stream_response(self, message):
         self.add_user_message(message)
 
-         # Retrieve relevant long-term memories
+        # Retrieval: find document chunks whose embeddings are closest to the
+        # question, so the answer can use the plain-text knowledge source.
+        documents = self.rag.retrieve(message)
+        self.last_sources = documents
+
+        # Optional memory retrieval personalizes the conversation, while the
+        # document results above provide the application's factual grounding.
         memories = self.retrieve_memories(message, top_k=3)
-        documents = self.rag.retrieve(
-    message
-)
+
+        # Augmentation: insert the retrieved evidence into the model input
+        # before generation instead of asking the model to answer from memory.
         request_input = self.build_conversation(memories=memories, documents=documents)
 
+        # Generation: stream the grounded answer so the command-line UI can
+        # display each output token as it arrives.
         stream = self.client.responses.create(
-        model=self.model,
-        input=request_input,
-        temperature=self.temperature,
-        max_output_tokens=self.max_output_tokens,
-        stream=True,
+            model=self.model,
+            input=request_input,
+            temperature=self.temperature,
+            max_output_tokens=self.max_output_tokens,
+            stream=True,
         )
 
         full_text = ""

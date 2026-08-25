@@ -20,14 +20,20 @@ if __name__ == "__main__":
             time.sleep(0.05)  # Simulate streaming delay
         print()
 
-results = chatbot.retrieve_memories(
-    "What is my name?"
-)
+        # Show the document metadata used to ground the answer so the user
+        # can verify which file and page supplied the retrieved context.
+        print("Sources:")
+        displayed_sources = set()
+        for source in chatbot.last_sources:
+            metadata = source.get("metadata", {})
+            source_name = metadata.get("source", "unknown document")
+            page = metadata.get("page")
+            source_label = f"{source_name}, page {page}" if page else source_name
 
-print("\nRetrieved memories:")
+            if source_label in displayed_sources:
+                continue
 
-for memory in results:
-    print(
-        f"{memory['score']:.4f} -> "
-        f"{memory['content']}"
-    )
+            displayed_sources.add(source_label)
+            print(f"- {source_label} (score: {source['score']:.4f})")
+
+
