@@ -1,44 +1,102 @@
 [
   {
-    "text": "Northstar Technologies\nCompany Handbook\nOur company, Northstar Technologies, develops software products for business customers.\nThe standard working week is Monday through Friday. Employees normally work eight hours per day.\nThe company provides employees with access to internal training programs. Employees should discuss\ntraining plans with their manager before enrolling.\nThe company observes public holidays according to the employee's work location.\nOffice and Conduct\nEmployees are expected to communicate respectfully with colleagues and customers.\nCompany equipment must be used primarily for business purposes and handled with reasonable care.\nEmployees should report security incidents or suspected loss of company information to the IT team as\nsoon as possible.",
+    "text": "Company Handbook\n\nOur company, Northstar Technologies, develops software products for business customers. The standard working week is Monday through Friday. Employees normally work eight hours per day. The company provides employees with access to internal training programs. Employees should discuss training plans with their manager before enrolling. The company observes public holidays according to the employee's work location.",
     "metadata": {
       "source": "company_handbook.pdf",
-      "page": 1
+      "page": 1,
+      "section": "Company Handbook",
+      "section_index": 0,
+      "chunk_index": 0
     }
   },
   {
-    "text": "The project named Aurora was created by Dr. Maya Chen in 2024.\nAurora was designed to help researchers analyze climate data.\nThe project uses Python for its data processing pipeline.\nThe initial version was developed at the Northstar Research Lab.\nAurora is currently used by several research teams for climate analysis.",
+    "text": "Office and Conduct\n\nEmployees are expected to communicate respectfully with colleagues and customers. Company equipment must be used primarily for business purposes and handled with reasonable care. Employees should report security incidents or suspected loss of company information to the IT team as soon as possible.",
+    "metadata": {
+      "source": "company_handbook.pdf",
+      "page": 1,
+      "section": "Office and Conduct",
+      "section_index": 1,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "The project named Aurora was created by Dr. Maya Chen in 2024. Aurora was designed to help researchers analyze climate data. The project uses Python for its data processing pipeline. The initial version was developed at the Northstar Research Lab. Aurora is currently used by several research teams for climate analysis.",
     "metadata": {
       "source": "document.txt",
-      "page": null
+      "page": null,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
     }
   },
   {
     "text": "I am drishya, age of 37. i want to become AI engineer and currently started working on RAG",
     "metadata": {
       "source": "document2.txt",
-      "page": null
+      "page": null,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
     }
   },
   {
-    "text": "Northstar Technologies\nLeave Policy\nFull-time employees receive 24 days of annual leave per calendar year.\nEmployees should submit annual leave requests at least 3 working days before the requested leave date.\nManagers are responsible for reviewing and approving leave requests.\nUnused annual leave may be carried forward for up to 5 days into the following calendar year.\nSick leave should be reported to the employee's manager as soon as reasonably possible.\nParental Leave\nEmployees should contact Human Resources for information about parental leave eligibility and the\napplicable leave period.\nParental leave requests should be submitted through the company's HR system.",
+    "text": "Leave Policy\n\nFull-time employees receive 24 days of annual leave per calendar year. Employees should submit annual leave requests at least 3 working days before the requested leave date. Managers are responsible for reviewing and approving leave requests. Unused annual leave may be carried forward for up to 5 days into the following calendar year. Sick leave should be reported to the employee's manager as soon as reasonably possible.",
     "metadata": {
       "source": "leave_policy.pdf",
-      "page": 1
+      "page": 1,
+      "section": "Leave Policy",
+      "section_index": 0,
+      "chunk_index": 0
     }
   },
   {
-    "text": "Northstar Technologies\nExpense Reimbursement Policy\nEmployees may request reimbursement for reasonable business expenses incurred while performing\napproved company activities.\nExpense claims should normally be submitted within 30 days of the expense date.\nReceipts are required for individual expenses of 25 dollars or more.\nTravel expenses must comply with the approved travel plan and applicable spending limits.\nManagers review expense claims before reimbursement is processed.\nTravel\nEmployees should use economy-class air travel for flights shorter than 6 hours unless an exception has\nbeen approved.\nHotel expenses must remain within the nightly limit specified by the approved travel plan.\nPersonal expenses are not eligible for reimbursement.",
+    "text": "Parental Leave\n\nEmployees should contact Human Resources for information about parental leave eligibility and the applicable leave period. Parental leave requests should be submitted through the company's HR system.",
+    "metadata": {
+      "source": "leave_policy.pdf",
+      "page": 1,
+      "section": "Parental Leave",
+      "section_index": 1,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Expense Reimbursement Policy\n\nEmployees may request reimbursement for reasonable business expenses incurred while performing approved company activities. Expense claims should normally be submitted within 30 days of the expense date. Receipts are required for individual expenses of 25 dollars or more. Travel expenses must comply with the approved travel plan and applicable spending limits. Managers review expense claims before reimbursement is processed.",
     "metadata": {
       "source": "reimbursement_policy.pdf",
-      "page": 1
+      "page": 1,
+      "section": "Expense Reimbursement Policy",
+      "section_index": 0,
+      "chunk_index": 0
     }
   },
   {
-    "text": "Northstar Technologies\nRemote Work Policy\nEligible employees may work remotely up to 3 days per week, subject to team requirements.\nRemote work schedules should be agreed with the employee's manager in advance.\nEmployees working remotely are expected to remain reachable during their agreed working hours.\nCompany data must only be accessed using approved devices, applications, and security controls.\nRemote Equipment\nEmployees may request an approved company laptop and monitor for remote work.\nEquipment requests should be submitted to the IT service desk.\nEmployees are responsible for taking reasonable care of company equipment used at home.",
+    "text": "Travel\n\nEmployees should use economy-class air travel for flights shorter than 6 hours unless an exception has been approved. Hotel expenses must remain within the nightly limit specified by the approved travel plan. Personal expenses are not eligible for reimbursement.",
+    "metadata": {
+      "source": "reimbursement_policy.pdf",
+      "page": 1,
+      "section": "Travel",
+      "section_index": 1,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Remote Work Policy\n\nEligible employees may work remotely up to 3 days per week, subject to team requirements. Remote work schedules should be agreed with the employee's manager in advance. Employees working remotely are expected to remain reachable during their agreed working hours. Company data must only be accessed using approved devices, applications, and security controls.",
     "metadata": {
       "source": "remote_work_policy.pdf",
-      "page": 1
+      "page": 1,
+      "section": "Remote Work Policy",
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Remote Equipment\n\nEmployees may request an approved company laptop and monitor for remote work. Equipment requests should be submitted to the IT service desk. Employees are responsible for taking reasonable care of company equipment used at home.",
+    "metadata": {
+      "source": "remote_work_policy.pdf",
+      "page": 1,
+      "section": "Remote Equipment",
+      "section_index": 1,
+      "chunk_index": 0
     }
   }
 ]

@@ -1,267 +1,711 @@
-import os
 import json
+import re
+from pathlib import Path
 
 import faiss
 import numpy as np
-
-from pypdf import PdfReader
+import tiktoken
 from openai import OpenAI
+from pypdf import PdfReader
 
 from config import API_KEY
 
 
-DOCUMENTS_DIR = "documents"
-VECTOR_STORE_DIR = "vector_store"
+class Ingestion:
 
-INDEX_FILE = os.path.join(
-    VECTOR_STORE_DIR,
-    "faiss_index.bin"
-)
+    def __init__(
+        self,
+        input_file="documents",
+        index_file="vector_store/faiss_index.bin",
+        chunks_file="vector_store/chunks.json",
+        embedding_model="text-embedding-3-small",
+        chunk_size=300,
+        chunk_overlap=50,
+    ):
 
-CHUNKS_FILE = os.path.join(
-    VECTOR_STORE_DIR,
-    "chunks.json"
-)
+        self.client = OpenAI(api_key=API_KEY)
 
-EMBEDDING_MODEL = "text-embedding-3-small"
+        self.input_file = Path(input_file)
+        self.index_file = Path(index_file)
+        self.chunks_file = Path(chunks_file)
 
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 150
+        self.embedding_model = embedding_model
 
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
 
-client = OpenAI(
-    api_key=API_KEY
-)
-
-
-def load_pdf(file_path):
-
-    reader = PdfReader(file_path)
-
-    pages = []
-
-    for page_number, page in enumerate(reader.pages):
-
-        text = page.extract_text()
-
-        if not text:
-            continue
-
-        pages.append({
-            "text": text,
-            "page": page_number + 1
-        })
-
-    return pages
-
-
-def load_txt(file_path):
-
-    with open(
-        file_path,
-        "r",
-        encoding="utf-8"
-    ) as f:
-
-        text = f.read()
-
-    return [{
-        "text": text,
-        "page": None
-    }]
-
-
-def load_document(file_path):
-
-    extension = os.path.splitext(
-        file_path
-    )[1].lower()
-
-    if extension == ".pdf":
-
-        return load_pdf(file_path)
-
-    elif extension == ".txt":
-
-        return load_txt(file_path)
-
-    else:
-
-        raise ValueError(
-            f"Unsupported file type: {extension}"
+        self.encoding = tiktoken.get_encoding(
+            "cl100k_base"
         )
 
+    # =========================================================
+    # TOKEN COUNTING
+    # =========================================================
 
-def chunk_text(text):
+    def count_tokens(self, text):
 
-    chunks = []
-
-    start = 0
-
-    while start < len(text):
-
-        end = start + CHUNK_SIZE
-
-        chunk = text[start:end].strip()
-
-        if chunk:
-            chunks.append(chunk)
-
-        start += CHUNK_SIZE - CHUNK_OVERLAP
-
-    return chunks
-
-
-def load_all_documents():
-
-    documents = []
-
-    for filename in os.listdir(DOCUMENTS_DIR):
-
-        file_path = os.path.join(
-            DOCUMENTS_DIR,
-            filename
+        return len(
+            self.encoding.encode(text)
         )
 
-        if not os.path.isfile(file_path):
-            continue
+    # =========================================================
+    # LOAD DOCUMENTS
+    # =========================================================
 
-        print(
-            f"Loading: {filename}"
+    def load_documents(self):
+        """Load every supported PDF or text document with source metadata."""
+        if self.input_file.is_dir():
+            documents = []
+
+            for file_path in sorted(self.input_file.iterdir()):
+                if not file_path.is_file():
+                    continue
+
+                suffix = file_path.suffix.lower()
+                if suffix == ".pdf":
+                    reader = PdfReader(str(file_path))
+                    for page_number, page in enumerate(reader.pages, start=1):
+                        text = page.extract_text() or ""
+                        if text.strip():
+                            documents.append({
+                                "text": text,
+                                "metadata": {
+                                    "source": file_path.name,
+                                    "page": page_number,
+                                },
+                            })
+                elif suffix == ".txt":
+                    text = file_path.read_text(encoding="utf-8")
+                    if text.strip():
+                        documents.append({
+                            "text": text,
+                            "metadata": {
+                                "source": file_path.name,
+                                "page": None,
+                            },
+                        })
+
+            return documents
+
+        with open(
+            self.input_file,
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            return json.load(f)
+
+    # =========================================================
+    # NORMALIZE TEXT
+    # =========================================================
+
+    def normalize_text(self, text):
+
+        text = text.replace(
+            "\r\n",
+            "\n"
         )
 
-        pages = load_document(
-            file_path
+        text = re.sub(
+            r"[ \t]+",
+            " ",
+            text
         )
 
-        for page in pages:
+        text = re.sub(
+            r"\n{3,}",
+            "\n\n",
+            text
+        )
 
-            chunks = chunk_text(
-                page["text"]
+        return text.strip()
+
+    # =========================================================
+    # HEADING DETECTION
+    # =========================================================
+
+    def is_heading(self, line):
+
+        line = line.strip()
+
+        if not line:
+            return False
+
+        # Very long lines are probably normal content.
+        if len(line) > 80:
+            return False
+
+        # Ignore lines ending like normal sentences.
+        if line.endswith(
+            (".", "!", "?", ":")
+        ):
+            return False
+
+        words = line.split()
+
+        # Headings are usually short.
+        if len(words) > 8:
+            return False
+
+        # Known heading patterns in the current corpus.
+        heading_patterns = [
+            r".*Policy$",
+            r".*Leave$",
+            r".*Equipment$",
+            r"Office and Conduct",
+            r"Travel",
+            r"Company Handbook",
+        ]
+
+        for pattern in heading_patterns:
+
+            if re.fullmatch(
+                pattern,
+                line,
+                re.IGNORECASE
+            ):
+
+                return True
+
+        # Title Case heuristic.
+        #
+        # Example:
+        # "Parental Leave"
+        # "Remote Equipment"
+        #
+        # But avoid ordinary sentence-like text.
+        if len(words) <= 4:
+
+            title_case_words = 0
+
+            for word in words:
+
+                if word[0].isupper():
+                    title_case_words += 1
+
+            if title_case_words >= len(words) * 0.75:
+                return True
+
+        return False
+
+    # =========================================================
+    # SPLIT INTO SENTENCES
+    # =========================================================
+
+    def split_into_sentences(self, text):
+
+        sentences = re.split(
+            r"(?<=[.!?])\s+",
+            text.strip()
+        )
+
+        return [
+            sentence.strip()
+            for sentence in sentences
+            if sentence.strip()
+        ]
+
+    # =========================================================
+    # BUILD HIERARCHY
+    # =========================================================
+
+    def build_sections(self, text):
+
+        text = self.normalize_text(text)
+
+        lines = [
+            line.strip()
+            for line in text.splitlines()
+            if line.strip()
+        ]
+
+        sections = []
+
+        current_heading = None
+        current_lines = []
+
+        for line in lines:
+
+            if self.is_heading(line):
+
+                # Save previous section.
+                if current_lines:
+
+                    sections.append({
+                        "heading": current_heading,
+                        "text": " ".join(
+                            current_lines
+                        )
+                    })
+
+                current_heading = line
+                current_lines = []
+
+            else:
+
+                current_lines.append(line)
+
+        # Save final section.
+        if current_lines:
+
+            sections.append({
+                "heading": current_heading,
+                "text": " ".join(
+                    current_lines
+                )
+            })
+
+        return sections
+
+    # =========================================================
+    # CHUNK SECTION BY SENTENCES
+    # =========================================================
+
+    def chunk_section(
+        self,
+        heading,
+        text
+    ):
+
+        sentences = self.split_into_sentences(
+            text
+        )
+
+        chunks = []
+
+        current_sentences = []
+        current_tokens = 0
+
+        for sentence in sentences:
+
+            sentence_tokens = self.count_tokens(
+                sentence
             )
 
-            for chunk in chunks:
+            # -------------------------------------------------
+            # Handle a single very large sentence
+            # -------------------------------------------------
 
-                documents.append({
-                    "text": chunk,
-                    "metadata": {
-                        "source": filename,
-                        "page": page["page"]
-                    }
-                })
+            if sentence_tokens > self.chunk_size:
 
-    return documents
+                if current_sentences:
 
+                    chunks.append(
+                        self.format_chunk(
+                            heading,
+                            current_sentences
+                        )
+                    )
 
-def create_embeddings(chunks):
+                    current_sentences = []
+                    current_tokens = 0
 
-    texts = [
-        chunk["text"]
-        for chunk in chunks
-    ]
+                token_ids = self.encoding.encode(
+                    sentence
+                )
 
-    print(
-        f"Creating embeddings for {len(texts)} chunks..."
-    )
+                start = 0
 
-    response = client.embeddings.create(
-        model=EMBEDDING_MODEL,
-        input=texts
-    )
+                while start < len(token_ids):
 
-    embeddings = [
-        item.embedding
-        for item in response.data
-    ]
+                    end = start + self.chunk_size
 
-    embeddings = np.array(
-        embeddings,
-        dtype="float32"
-    )
+                    piece = self.encoding.decode(
+                        token_ids[start:end]
+                    ).strip()
 
-    # Normalize because your retrieval code
-    # also normalizes the query vector.
-    faiss.normalize_L2(
-        embeddings
-    )
+                    chunks.append(
+                        self.format_chunk(
+                            heading,
+                            [piece]
+                        )
+                    )
 
-    return embeddings
+                    if end >= len(token_ids):
+                        break
 
+                    start = end - self.chunk_overlap
 
-def build_faiss_index(embeddings):
+                continue
 
-    dimension = embeddings.shape[1]
+            # -------------------------------------------------
+            # Add sentence to current chunk
+            # -------------------------------------------------
 
-    index = faiss.IndexFlatIP(
-        dimension
-    )
+            if (
+                current_tokens
+                + sentence_tokens
+                <= self.chunk_size
+            ):
 
-    index.add(
-        embeddings
-    )
+                current_sentences.append(
+                    sentence
+                )
 
-    return index
+                current_tokens += sentence_tokens
 
+            else:
 
-def save_vector_store(index, chunks):
+                # Save current chunk.
+                if current_sentences:
 
-    os.makedirs(
-        VECTOR_STORE_DIR,
-        exist_ok=True
-    )
+                    chunks.append(
+                        self.format_chunk(
+                            heading,
+                            current_sentences
+                        )
+                    )
 
-    faiss.write_index(
-        index,
-        INDEX_FILE
-    )
+                # Start new chunk with overlap.
+                overlap_sentences = []
 
-    with open(
-        CHUNKS_FILE,
-        "w",
-        encoding="utf-8"
-    ) as f:
+                overlap_tokens = 0
 
-        json.dump(
-            chunks,
-            f,
-            ensure_ascii=False,
-            indent=2
+                for previous_sentence in reversed(
+                    current_sentences
+                ):
+
+                    previous_tokens = self.count_tokens(
+                        previous_sentence
+                    )
+
+                    if (
+                        overlap_tokens
+                        + previous_tokens
+                        > self.chunk_overlap
+                    ):
+                        break
+
+                    overlap_sentences.insert(
+                        0,
+                        previous_sentence
+                    )
+
+                    overlap_tokens += previous_tokens
+
+                current_sentences = (
+                    overlap_sentences
+                    + [sentence]
+                )
+
+                current_tokens = (
+                    overlap_tokens
+                    + sentence_tokens
+                )
+
+        # Save final chunk.
+        if current_sentences:
+
+            chunks.append(
+                self.format_chunk(
+                    heading,
+                    current_sentences
+                )
+            )
+
+        return chunks
+
+    # =========================================================
+    # FORMAT CHUNK
+    # =========================================================
+
+    def format_chunk(
+        self,
+        heading,
+        sentences
+    ):
+
+        content = " ".join(
+            sentences
+        ).strip()
+
+        if heading:
+
+            return (
+                f"{heading}\n\n"
+                f"{content}"
+            )
+
+        return content
+
+    # =========================================================
+    # CREATE ALL CHUNKS
+    # =========================================================
+
+    def create_chunks(
+        self,
+        documents
+    ):
+
+        all_chunks = []
+
+        for document in documents:
+
+            metadata = document.get(
+                "metadata",
+                {}
+            )
+
+            source = metadata.get(
+                "source",
+                "unknown"
+            )
+
+            page = metadata.get(
+                "page"
+            )
+
+            text = document.get(
+                "text",
+                ""
+            )
+
+            if not text.strip():
+                continue
+
+            sections = self.build_sections(
+                text
+            )
+
+            for section_index, section in enumerate(
+                sections
+            ):
+
+                heading = section["heading"]
+
+                section_text = section["text"]
+
+                chunks = self.chunk_section(
+                    heading,
+                    section_text
+                )
+
+                for chunk_index, chunk in enumerate(
+                    chunks
+                ):
+
+                    all_chunks.append({
+
+                        "text": chunk,
+
+                        "metadata": {
+
+                            "source": source,
+
+                            "page": page,
+
+                            "section": heading,
+
+                            "section_index":
+                                section_index,
+
+                            "chunk_index":
+                                chunk_index
+                        }
+                    })
+
+        return all_chunks
+
+    # =========================================================
+    # CREATE EMBEDDINGS
+    # =========================================================
+
+    def create_embeddings(
+        self,
+        chunks
+    ):
+
+        texts = [
+            chunk["text"]
+            for chunk in chunks
+        ]
+
+        print(
+            f"Creating embeddings for "
+            f"{len(texts)} chunks..."
         )
 
-    print(
-        f"Saved FAISS index to {INDEX_FILE}"
-    )
+        response = self.client.embeddings.create(
+            model=self.embedding_model,
+            input=texts
+        )
 
-    print(
-        f"Saved chunks to {CHUNKS_FILE}"
-    )
+        vectors = [
+            item.embedding
+            for item in response.data
+        ]
 
+        return np.array(
+            vectors,
+            dtype="float32"
+        )
 
-def main():
+    # =========================================================
+    # BUILD FAISS INDEX
+    # =========================================================
 
-    chunks = load_all_documents()
-
-    print(
-        f"Total chunks: {len(chunks)}"
-    )
-
-    embeddings = create_embeddings(
-        chunks
-    )
-
-    index = build_faiss_index(
+    def build_faiss_index(
+        self,
         embeddings
-    )
+    ):
 
-    save_vector_store(
+        # Normalize vectors.
+        #
+        # Inner product between normalized vectors
+        # is equivalent to cosine similarity.
+
+        faiss.normalize_L2(
+            embeddings
+        )
+
+        dimension = embeddings.shape[1]
+
+        index = faiss.IndexFlatIP(
+            dimension
+        )
+
+        index.add(
+            embeddings
+        )
+
+        return index
+
+    # =========================================================
+    # SAVE
+    # =========================================================
+
+    def save(
+        self,
         index,
         chunks
-    )
+    ):
 
-    print(
-        "Ingestion complete."
-    )
+        faiss.write_index(
+            index,
+            str(self.index_file)
+        )
+
+        with open(
+            self.chunks_file,
+            "w",
+            encoding="utf-8"
+        ) as f:
+
+            json.dump(
+                chunks,
+                f,
+                indent=2,
+                ensure_ascii=False
+            )
+
+        print(
+            f"Saved FAISS index: "
+            f"{self.index_file}"
+        )
+
+        print(
+            f"Saved chunks: "
+            f"{self.chunks_file}"
+        )
+
+    # =========================================================
+    # INGEST
+    # =========================================================
+
+    def ingest(self):
+
+        print(
+            "Loading documents..."
+        )
+
+        documents = self.load_documents()
+
+        print(
+            f"Loaded {len(documents)} documents."
+        )
+
+        print(
+            "\nCreating hierarchical chunks..."
+        )
+
+        chunks = self.create_chunks(
+            documents
+        )
+
+        print(
+            f"Created {len(chunks)} chunks."
+        )
+
+        # -----------------------------------------------------
+        # Show chunks for inspection
+        # -----------------------------------------------------
+
+        for i, chunk in enumerate(
+            chunks
+        ):
+
+            print(
+                f"\n{'=' * 60}"
+            )
+
+            print(
+                f"CHUNK {i}"
+            )
+
+            print(
+                f"Source: "
+                f"{chunk['metadata']['source']}"
+            )
+
+            print(
+                f"Section: "
+                f"{chunk['metadata']['section']}"
+            )
+
+            print(
+                f"Tokens: "
+                f"{self.count_tokens(chunk['text'])}"
+            )
+
+            print(
+                f"\n{chunk['text']}"
+            )
+
+        # -----------------------------------------------------
+        # Embeddings
+        # -----------------------------------------------------
+
+        embeddings = self.create_embeddings(
+            chunks
+        )
+
+        # -----------------------------------------------------
+        # FAISS
+        # -----------------------------------------------------
+
+        index = self.build_faiss_index(
+            embeddings
+        )
+
+        # -----------------------------------------------------
+        # Save
+        # -----------------------------------------------------
+
+        self.save(
+            index,
+            chunks
+        )
+
+        print(
+            "\nIngestion complete."
+        )
 
 
 if __name__ == "__main__":
-    main()
+
+    ingestion = Ingestion(
+        chunk_size=300,
+        chunk_overlap=50
+    )
+
+    ingestion.ingest()
