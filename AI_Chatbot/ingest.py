@@ -7,6 +7,7 @@ import numpy as np
 import tiktoken
 from openai import OpenAI
 from pypdf import PdfReader
+from rank_bm25 import BM25Okapi
 
 from config import API_KEY
 

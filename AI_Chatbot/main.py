@@ -1,5 +1,13 @@
 from chatbot import ChatBot
 import time
+import logging
+
+
+logging.basicConfig(
+    filename="chatbot.log",
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
 
 chatbot = ChatBot()
 
@@ -34,6 +42,10 @@ if __name__ == "__main__":
                 continue
 
             displayed_sources.add(source_label)
-            print(f"- {source_label} (score: {source['score']:.4f})")
+            citation = source.get("citation", "")
+            print(
+                f"- [{citation}] {source_label} "
+                f"(score: {source['score']:.4f})"
+            )
 
 

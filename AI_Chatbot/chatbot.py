@@ -3,7 +3,11 @@ from config import API_KEY
 import json
 from pathlib import Path
 import tiktoken
+import logging
 from rag import RAG
+
+
+logger = logging.getLogger(__name__)
 
 class ChatBot:
     def __init__(self, model="gpt-4.1-mini", temperature=0.7, system_prompt=None,context_budget=4000,
@@ -47,7 +51,8 @@ Rules:
    document-based questions.
 
 7. If no relevant document context is provided, do not answer
-   from general knowledge.
+    from general knowledge.
+8. Cite every factual claim with the matching source label, such as [S1].
 """
     def add_user_message(self, message):
         self.history.append({
@@ -97,8 +102,13 @@ Rules:
             document_text = "Relevant document context:\n"
 
             for document in documents:
+                metadata = document.get("metadata", {})
+                source = metadata.get("source", "unknown")
+                page = metadata.get("page")
+                location = f"{source}, page {page}" if page else source
                 document_text += (
-                    f"- {document['text']}\n"
+                    f"- [{document['citation']}] Source: {location}\n"
+                    f"  {document['text']}\n"
                 )
 
             documents_tokens = sum(
@@ -144,6 +154,27 @@ Rules:
     def clear_history(self):
         self.history = []
 
+    def rewrite_query(self, message):
+        """Resolve references in follow-up questions before retrieval."""
+        previous_messages = self.history[:-1][-6:]
+        if not previous_messages:
+            return message
+
+        history_text = "\n".join(
+            f"{item['role']}: {item['content']}"
+            for item in previous_messages
+        )
+        response = self.client.responses.create(
+            model=self.model,
+            input=(
+                "Rewrite the latest user question as a standalone search query. "
+                "Resolve references using the conversation. Return only the query.\n\n"
+                f"Conversation:\n{history_text}\n\nLatest question:\n{message}"
+            ),
+        )
+        rewritten = response.output_text.strip()
+        return rewritten or message
+
     def chat(self, message, stream=False):
         """Send prompt and either stream chunks or return full response.
 
@@ -163,10 +194,26 @@ Rules:
     def stream_response(self, message):
         self.add_user_message(message)
 
+        rewritten_query = self.rewrite_query(message)
+
         # Retrieval: find document chunks whose embeddings are closest to the
         # question, so the answer can use the plain-text knowledge source.
-        documents = self.rag.retrieve(message)
+        documents = self.rag.retrieve(rewritten_query)
         self.last_sources = documents
+
+        logger.info(
+            "retrieval question=%r rewritten_query=%r results=%d",
+            message,
+            rewritten_query,
+            len(documents),
+        )
+
+        if not documents:
+            answer = "I don't have that information in the provided documents."
+            self.add_assistant_message(answer)
+            self.save_history()
+            yield answer
+            return
 
         # Optional memory retrieval personalizes the conversation, while the
         # document results above provide the application's factual grounding.

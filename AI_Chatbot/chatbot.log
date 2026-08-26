@@ -1,0 +1,6 @@
+2026-08-25 23:19:46,528 INFO httpx2 HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2026-08-25 23:19:48,881 INFO httpx2 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-08-25 23:19:48,886 INFO chatbot retrieval question='whar are the fulltime employe policies' rewritten_query='full-time employee policies' results=2
+2026-08-25 23:19:49,448 INFO httpx2 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2026-08-25 23:19:50,086 INFO httpx2 HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2026-08-25 23:20:02,396 INFO httpx2 HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"

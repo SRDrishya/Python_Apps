@@ -4,3 +4,4 @@ numpy
 faiss-cpu
 tiktoken
 pypdf
+rank-bm25
