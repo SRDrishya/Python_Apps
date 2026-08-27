@@ -4,4 +4,9 @@ numpy
 faiss-cpu
 tiktoken
 pypdf
+pdfplumber
 rank-bm25
+beautifulsoup4
+python-docx
+python-pptx
+openpyxl

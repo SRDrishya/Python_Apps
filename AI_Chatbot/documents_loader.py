@@ -1,3 +1,7 @@
+import json
+from pypdf import PdfReader
+import pdfplumber
+
 from bs4 import BeautifulSoup
 from docx import Document
 from pptx import Presentation
@@ -25,49 +29,31 @@ def load_documents(self):
 
         try:
             if suffix == ".pdf":
-                documents.extend(
-                    self.load_pdf(file_path)
-                )
+                documents.extend(load_pdf(self, file_path))
 
             elif suffix == ".txt":
-                documents.extend(
-                    self.load_txt(file_path)
-                )
+                documents.extend(load_txt(self, file_path))
 
             elif suffix == ".docx":
-                documents.extend(
-                    self.load_docx(file_path)
-                )
+                documents.extend(load_docx(self, file_path))
 
             elif suffix == ".md":
-                documents.extend(
-                    self.load_txt(file_path)
-                )
+                documents.extend(load_txt(self, file_path))
 
             elif suffix == ".csv":
-                documents.extend(
-                    self.load_csv(file_path)
-                )
+                documents.extend(load_csv(self, file_path))
 
             elif suffix == ".json":
-                documents.extend(
-                    self.load_json(file_path)
-                )
+                documents.extend(load_json(self, file_path))
 
             elif suffix in [".html", ".htm"]:
-                documents.extend(
-                    self.load_html(file_path)
-                )
+                documents.extend(load_html(self, file_path))
 
             elif suffix == ".xlsx":
-                documents.extend(
-                    self.load_xlsx(file_path)
-                )
+                documents.extend(load_xlsx(self, file_path))
 
             elif suffix == ".pptx":
-                documents.extend(
-                    self.load_pptx(file_path)
-                )
+                documents.extend(load_pptx(self, file_path))
 
             else:
                 print(
@@ -87,26 +73,94 @@ def load_pdf(self, file_path):
     documents = []
 
     reader = PdfReader(str(file_path))
+    pending_table = None
 
-    for page_number, page in enumerate(
-        reader.pages,
-        start=1
-    ):
-        text = page.extract_text() or ""
+    with pdfplumber.open(str(file_path)) as pdf:
+        for page_number, page in enumerate(
+            reader.pages,
+            start=1
+        ):
+            text = page.extract_text() or ""
 
-        if not text.strip():
-            continue
+            if text.strip():
+                documents.append({
+                    "text": text,
+                    "metadata": {
+                        "source": file_path.name,
+                        "file_type": "pdf",
+                        "page": page_number
+                    }
+                })
 
-        documents.append({
-            "text": text,
-            "metadata": {
-                "source": file_path.name,
-                "file_type": "pdf",
-                "page": page_number
-            }
-        })
+            tables = pdf.pages[page_number - 1].extract_tables()
+
+            for table_index, table in enumerate(tables):
+                rows = [
+                    [clean_table_cell(cell) for cell in row]
+                    for row in table
+                    if row and any(clean_table_cell(cell) for cell in row)
+                ]
+
+                if not rows:
+                    continue
+
+                column_count = max(len(row) for row in rows)
+
+                if (
+                    pending_table
+                    and pending_table["page_end"] == page_number - 1
+                    and pending_table["signature"] == column_count
+                ):
+                    pending_table["rows"].extend(rows)
+                    pending_table["page_end"] = page_number
+                    continue
+
+                if pending_table:
+                    documents.append(format_table_document(file_path, pending_table))
+
+                pending_table = {
+                    "rows": rows,
+                    "page_start": page_number,
+                    "page_end": page_number,
+                    "table_index": table_index,
+                    "signature": column_count,
+                }
+
+    if pending_table:
+        documents.append(format_table_document(file_path, pending_table))
 
     return documents
+
+
+def clean_table_cell(cell):
+    return " ".join(str(cell or "").split())
+
+
+def format_table_document(file_path, table):
+    rows = []
+    headers = table["rows"][0]
+
+    for row in table["rows"]:
+        cells = row + [""] * (len(headers) - len(row))
+        rows.append(
+            " | ".join(
+                f"{header or f'Column {index + 1}'}: {cells[index]}"
+                for index, header in enumerate(headers)
+                if cells[index]
+            )
+        )
+
+    return {
+        "text": "Table\n\n" + "\n".join(rows),
+        "metadata": {
+            "source": file_path.name,
+            "file_type": "pdf",
+            "page": table["page_start"],
+            "page_start": table["page_start"],
+            "page_end": table["page_end"],
+            "table_index": table["table_index"],
+        }
+    }
 
 def load_txt(self, file_path):
 
@@ -275,7 +329,11 @@ def load_html(self, file_path):
         separator="\n"
     )
 
-    text = self.normalize_text(text)
+    text = "\n".join(
+        line.strip()
+        for line in text.splitlines()
+        if line.strip()
+    )
 
     if not text.strip():
         return []
@@ -288,4 +346,95 @@ def load_html(self, file_path):
             "page": None
         }
     }]
+
+def load_xlsx(self, file_path):
+
+    workbook = load_workbook(
+        filename=file_path,
+        read_only=True,
+        data_only=True
+    )
+
+    documents = []
+
+    for worksheet in workbook.worksheets:
+
+        rows = []
+
+        for row in worksheet.iter_rows(
+            values_only=True
+        ):
+
+            values = [
+                str(value).strip()
+                for value in row
+                if value is not None
+            ]
+
+            if values:
+                rows.append(
+                    " | ".join(values)
+                )
+
+        if not rows:
+            continue
+
+        text = "\n".join(rows)
+
+        documents.append({
+            "text": text,
+            "metadata": {
+                "source": file_path.name,
+                "file_type": "xlsx",
+                "page": None,
+                "sheet": worksheet.title
+            }
+        })
+
+    return documents
+
+def load_pptx(self, file_path):
+
+    presentation = Presentation(
+        str(file_path)
+    )
+
+    documents = []
+
+    for slide_number, slide in enumerate(
+        presentation.slides,
+        start=1
+    ):
+
+        texts = []
+
+        for shape in slide.shapes:
+
+            if not hasattr(shape, "text"):
+                continue
+
+            text = shape.text.strip()
+
+            if text:
+                texts.append(text)
+
+        text = "\n".join(texts)
+
+        if not text.strip():
+            continue
+
+        documents.append({
+            "text": text,
+            "metadata": {
+                "source": file_path.name,
+                "file_type": "pptx",
+                "page": slide_number,
+                "slide": slide_number
+            }
+        })
+
+    return documents
+
+
+
 

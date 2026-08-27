@@ -1,0 +1,36 @@
+{
+  "customers": [
+    {
+      "customer_id": "C1001",
+      "name": "Alice Johnson",
+      "membership": "Gold",
+      "country": "India",
+      "orders": 18,
+      "total_spent": 2450.75
+    },
+    {
+      "customer_id": "C1002",
+      "name": "Bob Smith",
+      "membership": "Silver",
+      "country": "United States",
+      "orders": 9,
+      "total_spent": 980.5
+    },
+    {
+      "customer_id": "C1003",
+      "name": "Carol Williams",
+      "membership": "Platinum",
+      "country": "United Kingdom",
+      "orders": 32,
+      "total_spent": 5620.25
+    },
+    {
+      "customer_id": "C1004",
+      "name": "David Brown",
+      "membership": "Bronze",
+      "country": "Australia",
+      "orders": 4,
+      "total_spent": 320.0
+    }
+  ]
+}

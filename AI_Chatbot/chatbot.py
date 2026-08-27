@@ -105,7 +105,12 @@ Rules:
                 metadata = document.get("metadata", {})
                 source = metadata.get("source", "unknown")
                 page = metadata.get("page")
-                location = f"{source}, page {page}" if page else source
+                page_start = metadata.get("page_start")
+                page_end = metadata.get("page_end")
+                if page_start and page_end and page_start != page_end:
+                    location = f"{source}, pages {page_start}-{page_end}"
+                else:
+                    location = f"{source}, page {page}" if page else source
                 document_text += (
                     f"- [{document['citation']}] Source: {location}\n"
                     f"  {document['text']}\n"

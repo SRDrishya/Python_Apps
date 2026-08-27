@@ -1,0 +1,7 @@
+product_id,product_name,category,price,currency,stock
+P001,Wireless Keyboard,Accessories,49.99,USD,120
+P002,Wireless Mouse,Accessories,29.99,USD,250
+P003,USB-C Hub,Accessories,39.99,USD,85
+P004,27-inch Monitor,Monitors,249.99,USD,45
+P005,Mechanical Keyboard,Accessories,89.99,USD,60
+P006,Laptop Stand,Office,34.99,USD,150

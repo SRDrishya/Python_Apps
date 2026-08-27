@@ -3,7 +3,13 @@
     "text": "Company Handbook\n\nOur company, Northstar Technologies, develops software products for business customers. The standard working week is Monday through Friday. Employees normally work eight hours per day. The company provides employees with access to internal training programs. Employees should discuss training plans with their manager before enrolling. The company observes public holidays according to the employee's work location.",
     "metadata": {
       "source": "company_handbook.pdf",
+      "file_type": "pdf",
       "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
       "section": "Company Handbook",
       "section_index": 0,
       "chunk_index": 0
@@ -13,9 +19,111 @@
     "text": "Office and Conduct\n\nEmployees are expected to communicate respectfully with colleagues and customers. Company equipment must be used primarily for business purposes and handled with reasonable care. Employees should report security incidents or suspected loss of company information to the IT team as soon as possible.",
     "metadata": {
       "source": "company_handbook.pdf",
+      "file_type": "pdf",
       "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
       "section": "Office and Conduct",
       "section_index": 1,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "About Us\n\nNovaTech Solutions is a software company specializing in cloud infrastructure and data analytics.",
+    "metadata": {
+      "source": "company_info.html",
+      "file_type": "html",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "About Us",
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Company Details\n\nFounded: 2018",
+    "metadata": {
+      "source": "company_info.html",
+      "file_type": "html",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Company Details",
+      "section_index": 1,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Headquarters: Bengaluru, India\n\nEmployees: 450",
+    "metadata": {
+      "source": "company_info.html",
+      "file_type": "html",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Headquarters: Bengaluru, India",
+      "section_index": 2,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Products\n\nOur primary products include NovaCloud, NovaAnalytics, and NovaSecure.",
+    "metadata": {
+      "source": "company_info.html",
+      "file_type": "html",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Products",
+      "section_index": 3,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Architecture\n\nThe architecture diagram shows how customers connect to the API Gateway and how requests are routed to the Payment Service and Order Service.",
+    "metadata": {
+      "source": "company_info.html",
+      "file_type": "html",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Architecture",
+      "section_index": 4,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "{ \"customers\": [ { \"customer_id\": \"C1001\", \"name\": \"Alice Johnson\", \"membership\": \"Gold\", \"country\": \"India\", \"orders\": 18, \"total_spent\": 2450.75 }, { \"customer_id\": \"C1002\", \"name\": \"Bob Smith\", \"membership\": \"Silver\", \"country\": \"United States\", \"orders\": 9, \"total_spent\": 980.5 }, { \"customer_id\": \"C1003\", \"name\": \"Carol Williams\", \"membership\": \"Platinum\", \"country\": \"United Kingdom\", \"orders\": 32, \"total_spent\": 5620.25 }, { \"customer_id\": \"C1004\", \"name\": \"David Brown\", \"membership\": \"Bronze\", \"country\": \"Australia\", \"orders\": 4, \"total_spent\": 320.0 } ] }",
+    "metadata": {
+      "source": "customers.json",
+      "file_type": "json",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": null,
+      "section_index": 0,
       "chunk_index": 0
     }
   },
@@ -23,7 +131,13 @@
     "text": "The project named Aurora was created by Dr. Maya Chen in 2024. Aurora was designed to help researchers analyze climate data. The project uses Python for its data processing pipeline. The initial version was developed at the Northstar Research Lab. Aurora is currently used by several research teams for climate analysis.",
     "metadata": {
       "source": "document.txt",
+      "file_type": "txt",
       "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
       "section": null,
       "section_index": 0,
       "chunk_index": 0
@@ -33,7 +147,125 @@
     "text": "I am drishya, age of 37. i want to become AI engineer and currently started working on RAG",
     "metadata": {
       "source": "document2.txt",
+      "file_type": "txt",
       "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "NovaTech Employee Handbook\n\nThis handbook summarizes key workplace policies for full-time employees of NovaTech Solutions.",
+    "metadata": {
+      "source": "employee_handbook.docx",
+      "file_type": "docx",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "NovaTech Employee Handbook",
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Leave Policy\n\nAll full-time employees are entitled to 24 days of paid annual leave per calendar year. Leave requests must be submitted at least 7 days before the intended start date.",
+    "metadata": {
+      "source": "employee_handbook.docx",
+      "file_type": "docx",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Leave Policy",
+      "section_index": 1,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Working Hours\n\nStandard working hours are 9:00 AM to 6:00 PM, Monday through Friday.",
+    "metadata": {
+      "source": "employee_handbook.docx",
+      "file_type": "docx",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Working Hours",
+      "section_index": 2,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Remote Work\n\nEmployees may work remotely up to 2 days per week, subject to manager approval. Figure 1: NovaTech remote work model.",
+    "metadata": {
+      "source": "employee_handbook.docx",
+      "file_type": "docx",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Remote Work",
+      "section_index": 3,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Important Contact\n\nHR Operations: hr@novatech.example Benefit | Eligibility | Annual Allowance Paid Annual Leave | Full-time employees | 24 days Remote Work | Manager approval | Up to 2 days/week Training Leave | After probation | 5 days",
+    "metadata": {
+      "source": "employee_handbook.docx",
+      "file_type": "docx",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Important Contact",
+      "section_index": 4,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Year | Revenue_USD_Millions 2022 | 80 2023 | 100 2024 | 130 2025 | 150",
+    "metadata": {
+      "source": "financial_report.xlsx",
+      "file_type": "xlsx",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": "Revenue",
+      "slide": null,
+      "row": null,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Department | 2025 Cost_USD_M Engineering | 4.2 Finance | 2.1 Operations | 3.5 Sales | 2.8",
+    "metadata": {
+      "source": "financial_report.xlsx",
+      "file_type": "xlsx",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": "Department Costs",
+      "slide": null,
+      "row": null,
       "section": null,
       "section_index": 0,
       "chunk_index": 0
@@ -43,7 +275,13 @@
     "text": "Leave Policy\n\nFull-time employees receive 24 days of annual leave per calendar year. Employees should submit annual leave requests at least 3 working days before the requested leave date. Managers are responsible for reviewing and approving leave requests. Unused annual leave may be carried forward for up to 5 days into the following calendar year. Sick leave should be reported to the employee's manager as soon as reasonably possible.",
     "metadata": {
       "source": "leave_policy.pdf",
+      "file_type": "pdf",
       "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
       "section": "Leave Policy",
       "section_index": 0,
       "chunk_index": 0
@@ -53,9 +291,287 @@
     "text": "Parental Leave\n\nEmployees should contact Human Resources for information about parental leave eligibility and the applicable leave period. Parental leave requests should be submitted through the company's HR system.",
     "metadata": {
       "source": "leave_policy.pdf",
+      "file_type": "pdf",
       "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
       "section": "Parental Leave",
       "section_index": 1,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "# Payment API Documentation\n\n## Overview The Payment API allows applications to create and manage customer payments. ## Authentication The API uses **Bearer Token authentication**. Clients must include the token in the HTTP Authorization header:",
+    "metadata": {
+      "source": "payment_api.md",
+      "file_type": "md",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "# Payment API Documentation",
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Authorization: Bearer YOUR_API_TOKEN\n\n## Create Payment Endpoint: POST /api/v1/payments Required parameters: - `amount` - Payment amount in USD - `currency` - Three-letter currency code - `customer_id` - Unique customer identifier ## Payment Limits The minimum payment amount is **$1.00**. The maximum payment amount is **$10,000.00 per transaction**. ## Rate Limits Each API key can make up to **100 requests per minute**.",
+    "metadata": {
+      "source": "payment_api.md",
+      "file_type": "md",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Authorization: Bearer YOUR_API_TOKEN",
+      "section_index": 1,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "NovaTech Payment Policy\n\nThe Payment API and internal payment operations follow the limits described in this document.",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "NovaTech Payment Policy",
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Payment Limits\n\nThe minimum standard payment amount is $1.00. The maximum standard payment amount is $10,000.00 per transaction.",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Payment Limits",
+      "section_index": 1,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Currency\n\nStandard transaction $1.00 $10,000.00",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Currency",
+      "section_index": 2,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Refund\n\n$1.00 $5,000.00",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Refund",
+      "section_index": 3,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "USD\n\nManual adjustment $1.00 $2,500.00",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "USD",
+      "section_index": 4,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Authentication\n\nThe Payment API uses Bearer Token authentication. Clients must send the token in the HTTP Authorization header.",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Authentication",
+      "section_index": 5,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Architecture Reference\n\nThe following diagram shows how customer requests reach the API Gateway and are routed to the Payment Service or Order Service.",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Architecture Reference",
+      "section_index": 6,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "Table\n\nPayment Type: Payment Type | Minimum: Minimum | Maximum: Maximum | Currency: Currency Payment Type: Standard transaction | Minimum: $1.00 | Maximum: $10,000.00 | Currency: USD Payment Type: Refund | Minimum: $1.00 | Maximum: $5,000.00 | Currency: USD Payment Type: Manual adjustment | Minimum: $1.00 | Maximum: $2,500.00 | Currency: USD",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "page_start": 1,
+      "page_end": 1,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": "Table",
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "product_id: P001 product_name: Wireless Keyboard category: Accessories price: 49.99 currency: USD stock: 120",
+    "metadata": {
+      "source": "product_catalog.csv",
+      "file_type": "csv",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": 1,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "product_id: P002 product_name: Wireless Mouse category: Accessories price: 29.99 currency: USD stock: 250",
+    "metadata": {
+      "source": "product_catalog.csv",
+      "file_type": "csv",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": 2,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "product_id: P003 product_name: USB-C Hub category: Accessories price: 39.99 currency: USD stock: 85",
+    "metadata": {
+      "source": "product_catalog.csv",
+      "file_type": "csv",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": 3,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "product_id: P004 product_name: 27-inch Monitor category: Monitors price: 249.99 currency: USD stock: 45",
+    "metadata": {
+      "source": "product_catalog.csv",
+      "file_type": "csv",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": 4,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "product_id: P005 product_name: Mechanical Keyboard category: Accessories price: 89.99 currency: USD stock: 60",
+    "metadata": {
+      "source": "product_catalog.csv",
+      "file_type": "csv",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": 5,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "product_id: P006 product_name: Laptop Stand category: Office price: 34.99 currency: USD stock: 150",
+    "metadata": {
+      "source": "product_catalog.csv",
+      "file_type": "csv",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": 6,
+      "section": null,
+      "section_index": 0,
+      "chunk_index": 0
+    }
+  },
+  {
+    "text": "# Multimodal RAG Test Dataset This dataset is designed to test a RAG pipeline against multiple document types and content types. ## Files - employee_handbook.docx - Text - Table - Embedded image - payment_policy.pdf - Text - Table - Architecture diagram - product_catalog.csv - Structured tabular data - customers.json - Structured JSON data - company_info.html - HTML text - Image reference - financial_report.xlsx - Spreadsheet table - Bar chart - architecture.png - Architecture diagram - rag_test_questions.json - Direct questions - Table questions - Image questions - Chart questions - Cross-document questions - Unanswerable questions ## Suggested metadata Your ingestion pipeline should preserve metadata such as: source file_type page sheet section element_type table_id image_id chunk_id ## Important After copying these documents into your RAG document directory, run your ingestion process before starting the chatbot. Example: python ingest.py Then: python main.py",
+    "metadata": {
+      "source": "README.md",
+      "file_type": "md",
+      "page": null,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
+      "section": null,
+      "section_index": 0,
       "chunk_index": 0
     }
   },
@@ -63,7 +579,13 @@
     "text": "Expense Reimbursement Policy\n\nEmployees may request reimbursement for reasonable business expenses incurred while performing approved company activities. Expense claims should normally be submitted within 30 days of the expense date. Receipts are required for individual expenses of 25 dollars or more. Travel expenses must comply with the approved travel plan and applicable spending limits. Managers review expense claims before reimbursement is processed.",
     "metadata": {
       "source": "reimbursement_policy.pdf",
+      "file_type": "pdf",
       "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
       "section": "Expense Reimbursement Policy",
       "section_index": 0,
       "chunk_index": 0
@@ -73,7 +595,13 @@
     "text": "Travel\n\nEmployees should use economy-class air travel for flights shorter than 6 hours unless an exception has been approved. Hotel expenses must remain within the nightly limit specified by the approved travel plan. Personal expenses are not eligible for reimbursement.",
     "metadata": {
       "source": "reimbursement_policy.pdf",
+      "file_type": "pdf",
       "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
       "section": "Travel",
       "section_index": 1,
       "chunk_index": 0
@@ -83,7 +611,13 @@
     "text": "Remote Work Policy\n\nEligible employees may work remotely up to 3 days per week, subject to team requirements. Remote work schedules should be agreed with the employee's manager in advance. Employees working remotely are expected to remain reachable during their agreed working hours. Company data must only be accessed using approved devices, applications, and security controls.",
     "metadata": {
       "source": "remote_work_policy.pdf",
+      "file_type": "pdf",
       "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
       "section": "Remote Work Policy",
       "section_index": 0,
       "chunk_index": 0
@@ -93,7 +627,13 @@
     "text": "Remote Equipment\n\nEmployees may request an approved company laptop and monitor for remote work. Equipment requests should be submitted to the IT service desk. Employees are responsible for taking reasonable care of company equipment used at home.",
     "metadata": {
       "source": "remote_work_policy.pdf",
+      "file_type": "pdf",
       "page": 1,
+      "page_start": null,
+      "page_end": null,
+      "sheet": null,
+      "slide": null,
+      "row": null,
       "section": "Remote Equipment",
       "section_index": 1,
       "chunk_index": 0

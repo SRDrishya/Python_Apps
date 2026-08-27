@@ -6,10 +6,10 @@ import faiss
 import numpy as np
 import tiktoken
 from openai import OpenAI
-from pypdf import PdfReader
 from rank_bm25 import BM25Okapi
 
 from config import API_KEY
+import documents_loader
 
 
 class Ingestion:
@@ -54,47 +54,8 @@ class Ingestion:
     # =========================================================
 
     def load_documents(self):
-        """Load every supported PDF or text document with source metadata."""
-        if self.input_file.is_dir():
-            documents = []
-
-            for file_path in sorted(self.input_file.iterdir()):
-                if not file_path.is_file():
-                    continue
-
-                suffix = file_path.suffix.lower()
-                if suffix == ".pdf":
-                    reader = PdfReader(str(file_path))
-                    for page_number, page in enumerate(reader.pages, start=1):
-                        text = page.extract_text() or ""
-                        if text.strip():
-                            documents.append({
-                                "text": text,
-                                "metadata": {
-                                    "source": file_path.name,
-                                    "page": page_number,
-                                },
-                            })
-                elif suffix == ".txt":
-                    text = file_path.read_text(encoding="utf-8")
-                    if text.strip():
-                        documents.append({
-                            "text": text,
-                            "metadata": {
-                                "source": file_path.name,
-                                "page": None,
-                            },
-                        })
-
-            return documents
-
-        with open(
-            self.input_file,
-            "r",
-            encoding="utf-8"
-        ) as f:
-
-            return json.load(f)
+        """Load documents through the shared document loader module."""
+        return documents_loader.load_documents(self)
 
     # =========================================================
     # NORMALIZE TEXT
@@ -456,6 +417,30 @@ class Ingestion:
                 "page"
             )
 
+            page_start = metadata.get(
+                "page_start"
+            )
+
+            page_end = metadata.get(
+                "page_end"
+            )
+
+            file_type = metadata.get(
+                "file_type"
+            )
+
+            sheet = metadata.get(
+                "sheet"
+            )
+
+            slide = metadata.get(
+                "slide"
+            )
+
+            row = metadata.get(
+                "row"
+            )
+
             text = document.get(
                 "text",
                 ""
@@ -493,7 +478,19 @@ class Ingestion:
 
                             "source": source,
 
+                            "file_type": file_type,
+
                             "page": page,
+
+                            "page_start": page_start,
+
+                            "page_end": page_end,
+
+                            "sheet": sheet,
+
+                            "slide": slide,
+
+                            "row": row,
 
                             "section": heading,
 
