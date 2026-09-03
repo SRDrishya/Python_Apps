@@ -10,3 +10,7 @@ beautifulsoup4
 python-docx
 python-pptx
 openpyxl
+langchain
+langchain-community
+langchain-openai
+langchain-text-splitters

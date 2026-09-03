@@ -1,0 +1,200 @@
+[
+  {
+    "page_content": "Northstar Technologies\nCompany Handbook\nOur company, Northstar Technologies, develops software products for business customers.\nThe standard working week is Monday through Friday. Employees normally work eight hours per day.\nThe company provides employees with access to internal training programs. Employees should discuss\ntraining plans with their manager before enrolling.\nThe company observes public holidays according to the employee's work location.\nOffice and Conduct",
+    "metadata": {
+      "source": "company_handbook.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 0
+    }
+  },
+  {
+    "page_content": "Office and Conduct\nEmployees are expected to communicate respectfully with colleagues and customers.\nCompany equipment must be used primarily for business purposes and handled with reasonable care.\nEmployees should report security incidents or suspected loss of company information to the IT team as\nsoon as possible.",
+    "metadata": {
+      "source": "company_handbook.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 1
+    }
+  },
+  {
+    "page_content": "NovaTech Solutions\nNovaTech Solutions\nAbout Us\nNovaTech Solutions is a software company specializing in\ncloud infrastructure and data analytics.\nCompany Details\nFounded: 2018\nHeadquarters: Bengaluru, India\nEmployees: 450\nIndustry: Software and Technology\nProducts\nOur primary products include NovaCloud, NovaAnalytics,\nand NovaSecure.\nArchitecture\nThe architecture diagram shows how customers connect to\nthe API Gateway and how requests are routed to the\nPayment Service and Order Service.",
+    "metadata": {
+      "source": "company_info.html",
+      "file_type": "html",
+      "page": null,
+      "chunk_id": 2
+    }
+  },
+  {
+    "page_content": "{\n  \"customers\": [\n    {\n      \"customer_id\": \"C1001\",\n      \"name\": \"Alice Johnson\",\n      \"membership\": \"Gold\",\n      \"country\": \"India\",\n      \"orders\": 18,\n      \"total_spent\": 2450.75\n    },\n    {\n      \"customer_id\": \"C1002\",\n      \"name\": \"Bob Smith\",\n      \"membership\": \"Silver\",\n      \"country\": \"United States\",\n      \"orders\": 9,\n      \"total_spent\": 980.5\n    },\n    {\n      \"customer_id\": \"C1003\",\n      \"name\": \"Carol Williams\",\n      \"membership\": \"Platinum\",",
+    "metadata": {
+      "source": "customers.json",
+      "file_type": "json",
+      "page": null,
+      "chunk_id": 3
+    }
+  },
+  {
+    "page_content": "\"name\": \"Carol Williams\",\n      \"membership\": \"Platinum\",\n      \"country\": \"United Kingdom\",\n      \"orders\": 32,\n      \"total_spent\": 5620.25\n    },\n    {\n      \"customer_id\": \"C1004\",\n      \"name\": \"David Brown\",\n      \"membership\": \"Bronze\",\n      \"country\": \"Australia\",\n      \"orders\": 4,\n      \"total_spent\": 320.0\n    }\n  ]\n}",
+    "metadata": {
+      "source": "customers.json",
+      "file_type": "json",
+      "page": null,
+      "chunk_id": 4
+    }
+  },
+  {
+    "page_content": "The project named Aurora was created by Dr. Maya Chen in 2024.\nAurora was designed to help researchers analyze climate data.\nThe project uses Python for its data processing pipeline.\nThe initial version was developed at the Northstar Research Lab.\nAurora is currently used by several research teams for climate analysis.",
+    "metadata": {
+      "source": "document.txt",
+      "file_type": "txt",
+      "page": null,
+      "chunk_id": 5
+    }
+  },
+  {
+    "page_content": "I am drishya, age of 37. i want to become AI engineer and currently started working on RAG",
+    "metadata": {
+      "source": "document2.txt",
+      "file_type": "txt",
+      "page": null,
+      "chunk_id": 6
+    }
+  },
+  {
+    "page_content": "Northstar Technologies\nLeave Policy\nFull-time employees receive 24 days of annual leave per calendar year.\nEmployees should submit annual leave requests at least 3 working days before the requested leave date.\nManagers are responsible for reviewing and approving leave requests.\nUnused annual leave may be carried forward for up to 5 days into the following calendar year.\nSick leave should be reported to the employee's manager as soon as reasonably possible.\nParental Leave",
+    "metadata": {
+      "source": "leave_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 7
+    }
+  },
+  {
+    "page_content": "Parental Leave\nEmployees should contact Human Resources for information about parental leave eligibility and the\napplicable leave period.\nParental leave requests should be submitted through the company's HR system.",
+    "metadata": {
+      "source": "leave_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 8
+    }
+  },
+  {
+    "page_content": "# Payment API Documentation\n\n## Overview\n\nThe Payment API allows applications to create and manage customer payments.\n\n## Authentication\n\nThe API uses **Bearer Token authentication**.\n\nClients must include the token in the HTTP Authorization header:\n\n    Authorization: Bearer YOUR_API_TOKEN\n\n## Create Payment\n\nEndpoint:\n\n    POST /api/v1/payments\n\nRequired parameters:\n\n- `amount` - Payment amount in USD\n- `currency` - Three-letter currency code\n- `customer_id` - Unique customer identifier",
+    "metadata": {
+      "source": "payment_api.md",
+      "file_type": "md",
+      "page": null,
+      "chunk_id": 9
+    }
+  },
+  {
+    "page_content": "## Payment Limits\n\nThe minimum payment amount is **$1.00**.\n\nThe maximum payment amount is **$10,000.00 per transaction**.\n\n## Rate Limits\n\nEach API key can make up to **100 requests per minute**.",
+    "metadata": {
+      "source": "payment_api.md",
+      "file_type": "md",
+      "page": null,
+      "chunk_id": 10
+    }
+  },
+  {
+    "page_content": "NovaTech Payment Policy\nThe Payment API and internal payment operations follow the limits described in this document.\nPayment Limits\nThe minimum standard payment amount is $1.00. The maximum standard payment amount is\n$10,000.00 per transaction.\nPayment Type\nMinimum\nMaximum\nCurrency\nStandard transaction\n$1.00\n$10,000.00\nUSD\nRefund\n$1.00\n$5,000.00\nUSD\nManual adjustment\n$1.00\n$2,500.00\nUSD\nAuthentication\nThe Payment API uses Bearer Token authentication. Clients must send the token in the HTTP",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 11
+    }
+  },
+  {
+    "page_content": "Authorization header.\nArchitecture Reference\nThe following diagram shows how customer requests reach the API Gateway and are routed to the\nPayment Service or Order Service.",
+    "metadata": {
+      "source": "payment_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 12
+    }
+  },
+  {
+    "page_content": "product_id: P001\nproduct_name: Wireless Keyboard\ncategory: Accessories\nprice: 49.99\ncurrency: USD\nstock: 120\n\nproduct_id: P002\nproduct_name: Wireless Mouse\ncategory: Accessories\nprice: 29.99\ncurrency: USD\nstock: 250\n\nproduct_id: P003\nproduct_name: USB-C Hub\ncategory: Accessories\nprice: 39.99\ncurrency: USD\nstock: 85\n\nproduct_id: P004\nproduct_name: 27-inch Monitor\ncategory: Monitors\nprice: 249.99\ncurrency: USD\nstock: 45",
+    "metadata": {
+      "source": "product_catalog.csv",
+      "file_type": "csv",
+      "page": null,
+      "chunk_id": 13
+    }
+  },
+  {
+    "page_content": "product_id: P005\nproduct_name: Mechanical Keyboard\ncategory: Accessories\nprice: 89.99\ncurrency: USD\nstock: 60\n\nproduct_id: P006\nproduct_name: Laptop Stand\ncategory: Office\nprice: 34.99\ncurrency: USD\nstock: 150",
+    "metadata": {
+      "source": "product_catalog.csv",
+      "file_type": "csv",
+      "page": null,
+      "chunk_id": 14
+    }
+  },
+  {
+    "page_content": "# Multimodal RAG Test Dataset\n\nThis dataset is designed to test a RAG pipeline against multiple\ndocument types and content types.\n\n## Files\n\n- employee_handbook.docx\n  - Text\n  - Table\n  - Embedded image\n\n- payment_policy.pdf\n  - Text\n  - Table\n  - Architecture diagram\n\n- product_catalog.csv\n  - Structured tabular data\n\n- customers.json\n  - Structured JSON data\n\n- company_info.html\n  - HTML text\n  - Image reference\n\n- financial_report.xlsx\n  - Spreadsheet table\n  - Bar chart",
+    "metadata": {
+      "source": "README.md",
+      "file_type": "md",
+      "page": null,
+      "chunk_id": 15
+    }
+  },
+  {
+    "page_content": "- financial_report.xlsx\n  - Spreadsheet table\n  - Bar chart\n\n- architecture.png\n  - Architecture diagram\n\n- rag_test_questions.json\n  - Direct questions\n  - Table questions\n  - Image questions\n  - Chart questions\n  - Cross-document questions\n  - Unanswerable questions\n\n## Suggested metadata\n\nYour ingestion pipeline should preserve metadata such as:\n\nsource\nfile_type\npage\nsheet\nsection\nelement_type\ntable_id\nimage_id\nchunk_id\n\n## Important",
+    "metadata": {
+      "source": "README.md",
+      "file_type": "md",
+      "page": null,
+      "chunk_id": 16
+    }
+  },
+  {
+    "page_content": "## Important\n\nAfter copying these documents into your RAG document directory,\nrun your ingestion process before starting the chatbot.\n\nExample:\n\npython ingest.py\n\nThen:\n\npython main.py",
+    "metadata": {
+      "source": "README.md",
+      "file_type": "md",
+      "page": null,
+      "chunk_id": 17
+    }
+  },
+  {
+    "page_content": "Northstar Technologies\nExpense Reimbursement Policy\nEmployees may request reimbursement for reasonable business expenses incurred while performing\napproved company activities.\nExpense claims should normally be submitted within 30 days of the expense date.\nReceipts are required for individual expenses of 25 dollars or more.\nTravel expenses must comply with the approved travel plan and applicable spending limits.\nManagers review expense claims before reimbursement is processed.\nTravel",
+    "metadata": {
+      "source": "reimbursement_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 18
+    }
+  },
+  {
+    "page_content": "Managers review expense claims before reimbursement is processed.\nTravel\nEmployees should use economy-class air travel for flights shorter than 6 hours unless an exception has\nbeen approved.\nHotel expenses must remain within the nightly limit specified by the approved travel plan.\nPersonal expenses are not eligible for reimbursement.",
+    "metadata": {
+      "source": "reimbursement_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 19
+    }
+  },
+  {
+    "page_content": "Northstar Technologies\nRemote Work Policy\nEligible employees may work remotely up to 3 days per week, subject to team requirements.\nRemote work schedules should be agreed with the employee's manager in advance.\nEmployees working remotely are expected to remain reachable during their agreed working hours.\nCompany data must only be accessed using approved devices, applications, and security controls.\nRemote Equipment\nEmployees may request an approved company laptop and monitor for remote work.",
+    "metadata": {
+      "source": "remote_work_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 20
+    }
+  },
+  {
+    "page_content": "Equipment requests should be submitted to the IT service desk.\nEmployees are responsible for taking reasonable care of company equipment used at home.",
+    "metadata": {
+      "source": "remote_work_policy.pdf",
+      "file_type": "pdf",
+      "page": 1,
+      "chunk_id": 21
+    }
+  }
+]
