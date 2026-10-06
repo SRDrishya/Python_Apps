@@ -1,8 +1,10 @@
 """A stateful LangGraph implementation of the grounded RAG workflow."""
 
 import json
+import csv
 import re
 import uuid
+from typing import Annotated
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -10,16 +12,52 @@ from langchain_classic.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
+from langchain_core.messages import RemoveMessage
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.message import REMOVE_ALL_MESSAGES, add_messages
+from langgraph.prebuilt import ToolNode
 from langgraph.types import Command, interrupt
 
 from config import API_KEY
 
 
 ABSTENTION = "I don't have that information in the provided documents."
+
+
+@tool
+def customer_lookup(customer_id: str) -> str:
+    """Look up a customer by ID in the local customer records."""
+    customers_file = Path(__file__).parent / "documents" / "customers.json"
+    records = json.loads(customers_file.read_text(encoding="utf-8"))["customers"]
+    customer = next(
+        (record for record in records if record["customer_id"].lower() == customer_id.lower()),
+        None,
+    )
+    if customer is None:
+        return f"No customer was found for ID {customer_id}."
+    return json.dumps(customer)
+
+
+@tool
+def product_lookup(product_id: str) -> str:
+    """Look up a product by ID in the local product catalog."""
+    products_file = Path(__file__).parent / "documents" / "product_catalog.csv"
+    with products_file.open(newline="", encoding="utf-8") as file:
+        products = csv.DictReader(file)
+        product = next(
+            (record for record in products if record["product_id"].lower() == product_id.lower()),
+            None,
+        )
+    if product is None:
+        return f"No product was found for ID {product_id}."
+    return json.dumps(product)
+
+
+TOOLS = [customer_lookup, product_lookup]
 
 
 class RAGState(TypedDict, total=False):
@@ -40,6 +78,7 @@ class RAGState(TypedDict, total=False):
     approval_required: bool
     approval: Any
     validation_errors: list[str]
+    messages: Annotated[list[Any], add_messages]
 
 
 class LangGraphRAG:
@@ -68,6 +107,7 @@ class LangGraphRAG:
             weights=[0.65, 0.35],
         )
         self.llm = ChatOpenAI(model=chat_model, temperature=0, api_key=API_KEY)
+        self.tool_llm = self.llm.bind_tools(TOOLS)
         self.graph = self._build_graph()
 
     @staticmethod
@@ -79,6 +119,9 @@ class LangGraphRAG:
 Do not guess or use outside knowledge. If the context does not support the answer,
 say exactly: \"I don't have that information in the provided documents.\"
 Cite every factual claim with the matching source label, such as [S1].
+If the customer_lookup tool is useful, call it with the customer ID. Cite tool facts
+with [Tool: customer_lookup]. If the product_lookup tool is useful, call it with the
+product ID and cite those facts with [Tool: product_lookup].
 
 Context:
 {context}"""),
@@ -160,6 +203,7 @@ Return one step per line, with no explanation. Use one line when the request is 
             "retrieval_attempt": 0,
             "generation_attempt": 0,
             "validation_errors": [],
+            "messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES)],
         }
 
     def _retrieve_node(self, state: RAGState) -> RAGState:
@@ -191,20 +235,32 @@ Return one step per line, with no explanation. Use one line when the request is 
         if not documents:
             return {"answer": ABSTENTION, "generation_attempt": 0}
 
-        messages = self._prompt().format_messages(
-            context=self._format_context(documents),
-            input=state["step_question"],
-        )
-        response = self.llm.invoke(messages)
-        return {"answer": response.content}
+        messages = state.get("messages")
+        if not messages:
+            messages = self._prompt().format_messages(
+                context=self._format_context(documents),
+                input=state["step_question"],
+            )
+        response = self.tool_llm.invoke(messages)
+        return {"messages": [response], "answer": response.content}
+
+    @staticmethod
+    def _route_tools(state: RAGState) -> str:
+        messages = state.get("messages", [])
+        if messages and getattr(messages[-1], "tool_calls", None):
+            return "tools"
+        return "validate"
 
     def _validate_node(self, state: RAGState) -> RAGState:
         answer = state.get("answer", "").strip()
         errors = []
         if not answer:
             errors.append("The answer is empty.")
-        if state.get("step_documents") and answer != ABSTENTION and not re.search(r"\[S\d+\]", answer):
-            errors.append("Every grounded answer must cite at least one source label.")
+        if state.get("step_documents") and answer != ABSTENTION and not (
+            re.search(r"\[S\d+\]", answer)
+            or "[Tool: customer_lookup]" in answer
+        ):
+            errors.append("Every grounded answer must cite a document or tool source.")
         return {"validation_errors": errors}
 
     def _retry_generation_node(self, state: RAGState) -> RAGState:
@@ -229,7 +285,7 @@ Return one step per line, with no explanation. Use one line when the request is 
         return {"answer": ABSTENTION}
 
     def _approval_node(self, state: RAGState) -> RAGState:
-        decision = interrupt({
+        decision =   ({
             "type": "human_approval",
             "question": state["question"],
             "answer": state.get("answer", ABSTENTION),
@@ -281,6 +337,7 @@ the question, say exactly: I don't have that information in the provided documen
         workflow.add_node("retrieve", self._retrieve_node)
         workflow.add_node("rewrite_query", self._rewrite_query_node)
         workflow.add_node("generate", self._generate_node)
+        workflow.add_node("tools", ToolNode(TOOLS))
         workflow.add_node("validate", self._validate_node)
         workflow.add_node("retry_generation", self._retry_generation_node)
         workflow.add_node("advance_step", self._advance_step_node)
@@ -292,7 +349,12 @@ the question, say exactly: I don't have that information in the provided documen
         workflow.add_edge("plan", "retrieve")
         workflow.add_conditional_edges("retrieve", self._route_retrieval)
         workflow.add_edge("rewrite_query", "retrieve")
-        workflow.add_edge("generate", "validate")
+        workflow.add_conditional_edges(
+            "generate",
+            self._route_tools,
+            {"tools": "tools", "validate": "validate"},
+        )
+        workflow.add_edge("tools", "generate")
         workflow.add_conditional_edges(
             "validate",
             self._route_validation,
