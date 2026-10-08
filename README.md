@@ -16,6 +16,10 @@ This folder contains a small set of beginner-friendly Python command-line applic
 - A weather application that fetches data from the OpenWeather API for a user-provided city.
 - Run it from the Weather_App folder with `python main.py` after installing dependencies from `requirements.txt`.
 
+### InterviewBot
+- A browser-based voice interview practice app using OpenAI GPT-Live over WebRTC, with natural turn-taking and interruption support.
+- Run it from the InterviewBot folder after configuring `OPENAI_API_KEY`; see its README for setup.
+
 ## Getting Started
 1. Open the project folder you want to use.
 2. Install any required dependencies if needed.

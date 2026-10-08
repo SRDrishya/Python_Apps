@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f5f2">
+    <title>Interview Room</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Interview Room home">
+          <span class="brand-mark" aria-hidden="true">i</span>
+          <span>Interview Room</span>
+        </a>
+        <span class="privacy-note"><span class="privacy-dot"></span> Private session</span>
+      </header>
+
+      <section class="interview-card" aria-labelledby="page-title">
+        <div class="eyebrow"><span class="eyebrow-line"></span> VOICE INTERVIEW</div>
+        <h1 id="page-title">A space to think<br>out loud.</h1>
+        <p class="intro">
+          Have a natural, one-on-one practice interview. Take your time with
+          answers. You can interrupt the interviewer whenever you need to.
+        </p>
+
+        <div class="connection" aria-live="polite">
+          <span id="status-indicator" class="status-indicator"></span>
+          <span id="status">Ready when you are</span>
+        </div>
+
+        <div class="controls">
+          <button id="start-button" class="button button-primary" type="button">
+            <span class="button-icon" aria-hidden="true">▶</span>
+            Start interview
+          </button>
+          <button id="pause-button" class="button button-secondary" type="button" disabled>
+            Pause interview
+          </button>
+          <button id="stop-button" class="button button-secondary" type="button" disabled>
+            End interview
+          </button>
+        </div>
+
+        <p class="hint">Your browser will ask for microphone access after you start.</p>
+        <audio id="remote-audio" autoplay playsinline></audio>
+
+        <section id="transcript-panel" class="transcript-panel" aria-label="Live transcript" hidden>
+          <div class="transcript-heading">
+            <span>Conversation</span>
+            <span class="live-label"><span></span> LIVE</span>
+          </div>
+          <div id="transcript" class="transcript" aria-live="polite"></div>
+        </section>
+      </section>
+
+      <footer>
+       
+        <span>Take a breath. There’s no rush.</span>
+      </footer>
+    </main>
+  </body>
+</html>
